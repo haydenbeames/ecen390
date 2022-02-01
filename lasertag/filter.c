@@ -27,6 +27,39 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 ****************************************** Main Filter Functions
 ******************************************
 **********************************************************************************************************/
+// Constants
+#define INIT_VAL 0
+
+#define NUM_IIR_FILTERS 10
+#define QUEUE_INIT_VAL 0.0
+#define X_QUEUE_SIZE
+#define Y_QUEUE_SIZE 
+#define Z_QUEUE_SIZE
+#define OUTPUT_QUEUE_SIZE
+
+
+
+//Queues
+static queue_t xQueue;
+static queue_t yQueue;
+static queue_t zQueues[NUM_IIR_FILTERS];
+static queue_t outputQueues[NUM_IIR_FILTERS];
+
+
+
+
+
+
+// inits all 10 IIR Filter zQueues
+void initZQueue(){
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){
+        
+    }
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){
+        
+    }
+}
+
 
 // Must call this prior to using any filter functions.
 void filter_init(){
@@ -164,7 +197,7 @@ queue_t *filter_getZQueue(uint16_t filterNumber){
 
 // Returns the address of the IIR output-queue for a specific filter-number.
 queue_t *filter_getIirOutputQueue(uint16_t filterNumber){
-    
+
 }
 
 // void filter_runTest();
