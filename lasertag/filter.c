@@ -30,12 +30,14 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 // Constants
 #define INIT_VAL 0
 
-#define NUM_IIR_FILTERS 10
+#define NUM_IIR_FILTERS 10      //Queue constants
 #define QUEUE_INIT_VAL 0.0
-#define X_QUEUE_SIZE
-#define Y_QUEUE_SIZE 
-#define Z_QUEUE_SIZE
-#define OUTPUT_QUEUE_SIZE
+#define X_QUEUE_SIZE 20000                      //not sure yet
+#define Y_QUEUE_SIZE 20000                      //not sure yet
+#define Z_QUEUE_SIZE IIR_A_COEFFICIENT_COUNT    //confirmed
+#define OUTPUT_QUEUE_SIZE 2000                  //confirmed
+
+#define IIR_A_COEFFICIENT_COUNT 10 //ignore first coefficient
 
 
 
@@ -47,8 +49,9 @@ static queue_t outputQueues[NUM_IIR_FILTERS];
 
 
 
-//generic init for all queues, just add size
+//generic init for all queues and fills with zeros, takes in size of queue
 void initQueue(queue_t* q, uint32_t queueSize){
+    queue_init(&q, queueSize);
     for(uint32_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
         queue_overwritePush(&q, QUEUE_INIT_VAL));
     }
@@ -57,8 +60,7 @@ void initQueue(queue_t* q, uint32_t queueSize){
 // inits all 10 IIR Filter zQueues
 void initZQueue(){
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
-        zQueues[i] = queue_t z;
-        queue_init(&(zQueues[i]), Z_QUEUE_SIZE);
+        zQueues[i] = queue_t q;
         initQueue(&(zQueues[i]), Z_QUEUE_SIZE);
     }
 }
@@ -66,8 +68,7 @@ void initZQueue(){
 // inits all 10 Output Filter zQueues
 void initOutputQueue(){
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
-        outputQueues[i] = queue_t z;
-        queue_init(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
+        outputQueues[i] = queue_t q;
         initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
     }
 }
@@ -75,12 +76,15 @@ void initOutputQueue(){
 
 // Must call this prior to using any filter functions.
 void filter_init(){
-
+    initQueue(&xQueue, X_QUEUE_SIZE); //fills
+    initQueue(&yQueue, Y_QUEUE_SIZE);
+    initZQueue();
+    initOutputQueue();
 }
 
 // Use this to copy an input into the input queue of the FIR-filter (xQueue).
 void filter_addNewInput(double x){
-
+    queue_push(&xQueue, x);
 }
 
 // Fills a queue with the given fillValue. For example,
@@ -88,7 +92,10 @@ void filter_addNewInput(double x){
 // after executing this function, the queue will contain 10 values
 // all of them 1.0.
 void filter_fillQueue(queue_t *q, double fillValue){
-
+    queue_size_t queueSize = queueSize(&q)
+    for(queue_size_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
+        queue_overwritePush(&q, fillValue));
+    }
 }
 
 // Invokes the FIR-filter. Input is contents of xQueue.
