@@ -47,16 +47,30 @@ static queue_t outputQueues[NUM_IIR_FILTERS];
 
 
 
-
-
+//generic init for all queues, just add size
+void initQueue(queue_t* q, uint32_t queueSize){
+    for(uint32_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
+        queue_overwritePush(&q, QUEUE_INIT_VAL));
+    }
+}
 
 // inits all 10 IIR Filter zQueues
 void initZQueue(){
-    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){
-        
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+        zQueues[i] = queue_t z;
+        queue_init(&(zQueues[i]), Z_QUEUE_SIZE);
+        initQueue(&(zQueues[i]), Z_QUEUE_SIZE);
     }
-    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){
-        
+}
+
+// inits all 10 Output Filter zQueues
+void initZOutputQueue(){
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+       for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+        outputQueues[i] = queue_t z;
+        queue_init(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
+        initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
+    } 
     }
 }
 
