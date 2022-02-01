@@ -34,10 +34,11 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 #define QUEUE_INIT_VAL 0.0
 #define X_QUEUE_SIZE 20000                      //not sure yet
 #define Y_QUEUE_SIZE 20000                      //not sure yet
-#define Z_QUEUE_SIZE IIR_A_COEFFICIENT_COUNT    //confirmed
+#define Z_QUEUE_SIZE IIR_A_COEF_COUNT    //confirmed
 #define OUTPUT_QUEUE_SIZE 2000                  //confirmed
 
-#define IIR_A_COEFFICIENT_COUNT 10 //ignore first coefficient
+#define IIR_A_COEF_COUNT 10 //ignores first coefficient
+#define FIR_COEF_COUNT 81
 
 
 
@@ -47,37 +48,54 @@ static queue_t yQueue;
 static queue_t zQueues[NUM_IIR_FILTERS];
 static queue_t outputQueues[NUM_IIR_FILTERS];
 
+const static double fir_coef[FIR_COEF_COUNT]; // = {inseRt coefs here};
+
+const static double iir_a_coef[NUM_IIR_FILTERS][IIR_A_COEF_COUNT]; // = {{PLAYER 1}, {pLAYER 2},...}
+
 
 
 //generic init for all queues and fills with zeros, takes in size of queue
-void initQueue(queue_t* q, uint32_t queueSize){
-    queue_init(&q, queueSize);
+void initQueue(queue_t* q, uint32_t queueSize, char* name){
+    queue_init(&q, queueSize, name);
     for(uint32_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
         queue_overwritePush(&q, QUEUE_INIT_VAL));
     }
 }
 
+//inits the xQueue using initQueue
+void initXQueue(){
+    initQueue(&xQueue, X_QUEUE_SIZE, "x");
+}
+
+//inits the yQueue using initQueue
+void initYQueue(){
+    initQueue(&yQueue, Y_QUEUE_SIZE, "y");
+}
+
 // inits all 10 IIR Filter zQueues
 void initZQueue(){
+    char* name;
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+        sprintf(name, "z%d", i);
         zQueues[i] = queue_t q;
-        initQueue(&(zQueues[i]), Z_QUEUE_SIZE);
-    }
+        initQueue(&(zQueues[i]), Z_QUEUE_SIZE, name);
 }
 
 // inits all 10 Output Filter zQueues
 void initOutputQueue(){
+    char* name;
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+        sprintf(name, "output%d", i);
         outputQueues[i] = queue_t q;
-        initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
+        initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE, name);
     }
 }
 
 
 // Must call this prior to using any filter functions.
 void filter_init(){
-    initQueue(&xQueue, X_QUEUE_SIZE); //fills
-    initQueue(&yQueue, Y_QUEUE_SIZE);
+    initXQueue(); //inits each queue and fills with 0.0
+    initYQueue();
     initZQueue();
     initOutputQueue();
 }
