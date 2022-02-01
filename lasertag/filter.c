@@ -64,13 +64,11 @@ void initZQueue(){
 }
 
 // inits all 10 Output Filter zQueues
-void initZOutputQueue(){
+void initOutputQueue(){
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
-       for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
         outputQueues[i] = queue_t z;
         queue_init(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
         initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE);
-    } 
     }
 }
 
