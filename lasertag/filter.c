@@ -104,9 +104,9 @@ void initZQueue(){
 }
 
 // inits all 10 Output Filter zQueues
-void initOutputQueue(){
+void initOutputQueue() {
     char* name;
-    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
         sprintf(name, "output%d", i);
         outputQueues[i] = queue_t q;
         initQueue(&(zQueues[i]), OUTPUT_QUEUE_SIZE, name);
