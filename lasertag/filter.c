@@ -79,7 +79,8 @@ const static double iir_b_coef[NUM_IIR_FILTERS][IIR_B_COEF_COUNT] = {{ 9.0928661
 
 //array for current power values - initialized to zero
 static double currentPowerValue[NUM_IIR_FILTERS] = {INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE};
-
+//saves oldest value to subtract from power - efficient power calculation
+static double oldestValue[NUM_IIR_FILTERS] = {INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE};
 
 
 //generic init for all queues and fills with zeros, takes in size of queue
@@ -193,16 +194,27 @@ double filter_iirFilter(uint16_t filterNumber){
 double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, bool debugPrint){
     double power_sum = INIT_VAL_DOUBLE;
     double currVal;
+    double newVal;
+    double oldVal;
+    uint32_t qLength = queue_elementCount(&(outputQueue[filterNumber])); //access length once
     //force case
     if(forceComputeFromScratch){
         //iterates through length of queue to add the square of each element
-        for(unsigned int i = INIT_VAL; i < queue_elementCount(&(outputQueue[filterNumber])); i++){
+        for(uint32_t i = INIT_VAL; i < qLength; i++){
             currVal = queue_readElementAt(&(outputQueue[filterNumber]),i); //access queue once
-            power_sum += (currVal * currVal);
+            power_sum += (currVal * currVal); //summing currVal^2
         }
-        currentPowerValue[filterNumber] = power_sum; //save power sum to array
+        
+    }
+    else{ //regular calculation
+        newVal = queue_readElementAt(&(outputQueue[filterNumber]),INIT_VAL); //pulls newest value
+        oldVal = oldestVal[filterNumber]; //pulls oldest value (not pushed off queue)
+        power_sum = currentPowerValue[filterNumber];
+        power_sum += ((newVal * newVal) - (oldVal * oldVal)) //adds newest square and subtracts oldest sum
     }
 
+    oldestValue[filterNumber] = queue_readElementAt(&(outputQueue[filterNumber]), qLength - 1); //saves oldest index for next power calculation
+    currentPowerValue[filterNumber] = power_sum; //save power sum to array
     return power_sum;
 }
 
