@@ -131,7 +131,7 @@ void filter_init(){
 
 // Use this to copy an input into the input queue of the FIR-filter (xQueue).
 void filter_addNewInput(double x){
-    queue_push(&xQueue, x);
+    queue_overwritePush(&xQueue, x);
 }
 
 // Fills a queue with the given fillValue. For example,
@@ -174,8 +174,8 @@ double filter_iirFilter(uint16_t filterNumber){
     }
     total_sum = b_coef_sum - a_coef_sum;
 
-    queue_push(&(zQueue[filterNumber]), total_sum);
-    queue_push(&(outputQueue[filterNumber]), total_sum);
+    queue_overwritePush(&(zQueue[filterNumber]), total_sum);
+    queue_overwritePush(&(outputQueue[filterNumber]), total_sum);
     return total_sum;
 }
 
