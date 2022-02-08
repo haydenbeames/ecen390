@@ -80,7 +80,7 @@ const static double iir_b_coef[NUM_IIR_FILTERS][IIR_B_COEF_COUNT] = {{ 9.0928661
 void initQueue(queue_t* q, uint32_t queueSize, char* name){
     queue_init(&q, queueSize, name);
     for(uint32_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
-        queue_overwritePush(&q, QUEUE_INIT_VAL));
+        queue_overwritePush(&q, QUEUE_INIT_VAL);
     }
 }
 
@@ -97,9 +97,9 @@ void initYQueue(){
 // inits all 10 IIR Filter zQueues
 void initZQueue(){
     char* name;
-    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){ //makes each queue instance
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
         sprintf(name, "z%d", i);
-        zQueues[i] = queue_t q;
+        //zQueues[i] = queue_t q;
         initQueue(&(zQueues[i]), Z_QUEUE_SIZE, name);
 }
 
@@ -132,7 +132,7 @@ void filter_addNewInput(double x){
 // after executing this function, the queue will contain 10 values
 // all of them 1.0.
 void filter_fillQueue(queue_t *q, double fillValue){
-    queue_size_t queueSize = queueSize(&q)
+    queue_size_t queueSize = queueSize(&q);
     for(queue_size_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
         queue_overwritePush(&q, fillValue));
     }
@@ -140,8 +140,12 @@ void filter_fillQueue(queue_t *q, double fillValue){
 
 // Invokes the FIR-filter. Input is contents of xQueue.
 // Output is returned and is also pushed on to yQueue.
-double filter_firFilter(){
-
+double filter_firFilter() {
+    double y = 0.0;
+    for(uint i = 0; i < Y_QUEUE_SIZE; i++) {
+        y = y + (xQueue[i]) * (fir_coef[Y_QUEUE_SIZE - i])
+    }
+ 
 }
 
 // Use this to invoke a single iir filter. Input comes from yQueue.
