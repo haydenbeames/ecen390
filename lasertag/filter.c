@@ -241,11 +241,10 @@ void filter_getCurrentPowerValues(double powerValues[]){
 // argument and then normalize them by dividing all of the values in
 // normalizedArray by the maximum power value contained in currentPowerValue[].
 void filter_getNormalizedPowerValues(double normalizedArray[], uint16_t *indexOfMaxValue){
-    uint32_t = currentPowerArraySize = queue_elementCount(currentPowerValue[]);
-    for(uint32 i = 0; i < currentPowerArraySize; i++) {
+    for(uint32 i = 0; i < NUM_IIR_FILTERS; i++) {
         normalizedArray[i] = currentPowerValue[i];
     }
-    for(uint32 i = 0; i < currentPowerArraySize; i++) {
+    for(uint32 i = 0; i < NUM_IIR_FILTERS; i++) {
         normalizedArray[i] = normalizedArray[i] / currentPowerValue[indexOfMaxValue];
     }
 }
@@ -266,8 +265,7 @@ const double *filter_getFirCoefficientArray(){
 
 // Returns the number of FIR coefficients.
 uint32_t filter_getFirCoefficientCount(){
-    uint32_t numberOfFIRCoefficients = queue_elementCount(fir_coef[]);
-    return numberOfFIRCoefficients;
+    return FIR_COEF_COUNT;
 }
 
 // Returns the array of coefficients for a particular filter number.
@@ -277,7 +275,7 @@ const double *filter_getIirACoefficientArray(uint16_t filterNumber){
 
 // Returns the number of A coefficients.
 uint32_t filter_getIirACoefficientCount(){
-    uint32_t numberOfACoefficients = queue_elementCount(fir_coef[]);
+    return IIR_A_COEF_COUNT
 }
 
 // Returns the array of coefficients for a particular filter number.
@@ -287,7 +285,7 @@ const double *filter_getIirBCoefficientArray(uint16_t filterNumber){
 
 // Returns the number of B coefficients.
 uint32_t filter_getIirBCoefficientCount(){
-
+    return IIR_B_COEF_COUNT;
 }
 
 // Returns the size of the yQueue.
