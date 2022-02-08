@@ -29,6 +29,7 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 **********************************************************************************************************/
 // Constants
 #define INIT_VAL 0
+#define INIT_VAL_DOUBLE 0.0
 
 #define NUM_IIR_FILTERS 10      //Queue constants
 #define QUEUE_INIT_VAL 0.0
@@ -147,7 +148,23 @@ double filter_firFilter(){
 // Use this to invoke a single iir filter. Input comes from yQueue.
 // Output is returned and is also pushed onto zQueue[filterNumber].
 double filter_iirFilter(uint16_t filterNumber){
+    double b_coef_sum = INIT_VAL_DOUBLE;
+    double a_coef_sum = INIT_VAL_DOUBLE;
+    double total_sum;
+    
+    //IIR B coefficients - iteratively adds coef * y val
+    for(uint32_t i = INIT_VAL; i < IIR_B_COEF_COUNT; i++){
+        b_coef_sum += b[filterNumber][i] * queue_readElementAt(&yQueue, IIR_B_COEF_COUNT -1 -i);
+    }
 
+    //IIR A coefficients - iteratively adds coef * z val
+    for(uint32_t i = INIT_VAL; i < IIR_A_COEF_COUNT; i++){
+        a_coef_sum += a[filterNumber][i] * queue_readElementAt(&(zQueue[filterNumber]), IIR_A_COEF_COUNT -1 -i);
+    }
+    total_sum = b_coef_sum - a_coef_sum;
+
+    queue_push(&(zQueue[filterNumber]), total_sum);
+    return total_sum;
 }
 
 // Use this to compute the power for values contained in an outputQueue.
@@ -165,6 +182,8 @@ double filter_iirFilter(uint16_t filterNumber){
 // array to keep track of these values for each of the 10 output queues.
 double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, bool debugPrint){
     
+
+
 }
 
 // Returns the last-computed output power value for the IIR filter
