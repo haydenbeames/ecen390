@@ -144,7 +144,7 @@ void filter_fillQueue(queue_t *q, double fillValue){
 double filter_firFilter() {
     double y = 0.0;
     for(uint i = 0; i < Y_QUEUE_SIZE; i++) {
-        y = y + (xQueue[i]) * (fir_coef[Y_QUEUE_SIZE - i])
+        y += (xQueue[i]) * (fir_coef[FIR_COEF_COUNT- 1 - i])
     }
  
 }
