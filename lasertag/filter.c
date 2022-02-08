@@ -77,6 +77,11 @@ const static double iir_b_coef[NUM_IIR_FILTERS][IIR_B_COEF_COUNT] = {{ 9.0928661
                                                                     {9.0928661148190954e-10,   0.0000000000000000e+00,  -4.5464330574095478e-09,   0.0000000000000000e+00,   9.0928661148190956e-09,   0.0000000000000000e+00,  -9.0928661148190956e-09,   0.0000000000000000e+00,   4.5464330574095478e-09,   0.0000000000000000e+00,  -9.0928661148190954e-10},     //channel 9
                                                                     {9.0928661148206091e-10,   0.0000000000000000e+00,  -4.5464330574103047e-09,   0.0000000000000000e+00,   9.0928661148206094e-09,   0.0000000000000000e+00,  -9.0928661148206094e-09,   0.0000000000000000e+00,   4.5464330574103047e-09,   0.0000000000000000e+00,  -9.0928661148206091e-10}};    //channel 10
 
+//array for current power values - initialized to zero
+static double currentPowerValue[NUM_IIR_FILTERS] = {INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, INIT_VAL_DOUBLE};
+
+
+
 //generic init for all queues and fills with zeros, takes in size of queue
 void initQueue(queue_t* q, uint32_t queueSize, char* name){
     queue_init(&q, queueSize, name);
@@ -164,6 +169,7 @@ double filter_iirFilter(uint16_t filterNumber){
     total_sum = b_coef_sum - a_coef_sum;
 
     queue_push(&(zQueue[filterNumber]), total_sum);
+    queue_push(&(outputQueue[filterNumber]), total_sum);
     return total_sum;
 }
 
@@ -181,15 +187,25 @@ double filter_iirFilter(uint16_t filterNumber){
 // (newest-value * newest-value). Note that this function will probably need an
 // array to keep track of these values for each of the 10 output queues.
 double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, bool debugPrint){
-    
+    double power_sum = INIT_VAL_DOUBLE;
+    double currVal;
+    //force case
+    if(forceComputeFromScratch){
+        //iterates through length of queue to add the square of each element
+        for(unsigned int i = INIT_VAL; i < queue_elementCount(&(outputQueue[filterNumber])); i++){
+            currVal = queue_readElementAt(&(outputQueue[filterNumber]),i); //access queue once
+            power_sum += (currVal * currVal);
+        }
+        currentPowerValue[filterNumber] = power_sum; //save power sum to array
+    }
 
-
+    return power_sum;
 }
 
 // Returns the last-computed output power value for the IIR filter
 // [filterNumber].
 double filter_getCurrentPowerValue(uint16_t filterNumber){
-
+    return currentPowerValue[filterNumber];
 }
 
 // Get a copy of the current power values.
