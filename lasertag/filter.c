@@ -231,7 +231,9 @@ double filter_getCurrentPowerValue(uint16_t filterNumber){
 // detector. Remember that when you pass an array into a C function, changes to
 // the array within that function are reflected in the returned array.
 void filter_getCurrentPowerValues(double powerValues[]){
-
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++){
+        powervalues[i] - currentPowerValues[i];
+    }
 }
 
 // Using the previously-computed power values that are current stored in
