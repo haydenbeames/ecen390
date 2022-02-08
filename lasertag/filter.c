@@ -142,7 +142,7 @@ void filter_addNewInput(double x){
 void filter_fillQueue(queue_t *q, double fillValue){
     queue_size_t queueSize = queue_size(q);
     for(queue_size_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
-        queue_overwritePush(&q, fillValue);
+        queue_overwritePush(q, fillValue);
     }
 }
 
