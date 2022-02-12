@@ -33,8 +33,8 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 
 #define NUM_IIR_FILTERS 10      //Queue constants
 #define QUEUE_INIT_VAL 0.0
-#define X_QUEUE_SIZE 20000                      //not sure yet
-#define Y_QUEUE_SIZE 20000                      //not sure yet
+#define X_QUEUE_SIZE FIR_COEF_COUNT      //not sure yet
+#define Y_QUEUE_SIZE IIR_B_COEF_COUNT    //not sure yet
 #define Z_QUEUE_SIZE IIR_A_COEF_COUNT    //confirmed
 #define OUTPUT_QUEUE_SIZE 2000                  //confirmed
 
@@ -85,7 +85,7 @@ static double oldestValue[NUM_IIR_FILTERS] = {INIT_VAL_DOUBLE, INIT_VAL_DOUBLE, 
 
 //generic init for all queues and fills with zeros, takes in size of queue
 void initQueue(queue_t* q, uint32_t queueSize, char* name){
-    queue_init(q, queueSize, name);
+    queue_init(q, queueSize, name); //inits queue
     for(uint32_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
         queue_overwritePush(q, QUEUE_INIT_VAL);
     }
@@ -93,31 +93,31 @@ void initQueue(queue_t* q, uint32_t queueSize, char* name){
 
 //inits the xQueue using initQueue
 void initXQueue(){
-    initQueue(&xQueue, X_QUEUE_SIZE, "x");
+    initQueue(&xQueue, X_QUEUE_SIZE, "x"); //uses custom function to init and fill with values
 }
 
 //inits the yQueue using initQueue
 void initYQueue(){
-    initQueue(&yQueue, Y_QUEUE_SIZE, "y");
+    initQueue(&yQueue, Y_QUEUE_SIZE, "y"); //uses custom function to init and fill with values
 }
 
 // inits all 10 IIR Filter zQueues
 void initZQueue(){
     char* name;
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
-        sprintf(name, "z%d", i);
+        sprintf(name, "z%d", i); //creates name for init function
         //zQueues[i] = queue_t q;
-        initQueue(&(zQueue[i]), Z_QUEUE_SIZE, name);
+        initQueue(&(zQueue[i]), Z_QUEUE_SIZE, name);//uses custom function to init and fill with values
     }
 }
 
 // inits all 10 Output Filter zQueues
 void initOutputQueue() {
-    char* name;
+    char* name;//creates name for init function
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
         sprintf(name, "output%d", i);
         //outputQueue[i] = queue_t q;
-        initQueue(&(zQueue[i]), OUTPUT_QUEUE_SIZE, name);
+        initQueue(&(zQueue[i]), OUTPUT_QUEUE_SIZE, name);//uses custom function to init and fill with values
     }
 }
 
@@ -140,7 +140,7 @@ void filter_addNewInput(double x){
 // after executing this function, the queue will contain 10 values
 // all of them 1.0.
 void filter_fillQueue(queue_t *q, double fillValue){
-    queue_size_t queueSize = queue_size(q);
+    queue_size_t queueSize = queue_size(q); //saves size
     for(queue_size_t i = INIT_VAL; i < queueSize; i++){ //fills with default value
         queue_overwritePush(q, fillValue);
     }
@@ -149,8 +149,8 @@ void filter_fillQueue(queue_t *q, double fillValue){
 // Invokes the FIR-filter. Input is contents of xQueue.
 // Output is returned and is also pushed on to yQueue.
 double filter_firFilter() {
-    double y = 0.0;
-    for(uint32_t i = 0; i < Y_QUEUE_SIZE; i++) {
+    double y = 0.0; //starts sum at 0
+    for(uint32_t i = 0; i < Y_QUEUE_SIZE; i++) { //for y queue
        y += queue_readElementAt(&xQueue, FIR_COEF_COUNT-1-i) * fir_coef[i];
     }
     queue_overwritePush(&yQueue, y);
