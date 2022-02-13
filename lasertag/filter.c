@@ -211,7 +211,7 @@ double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, 
         
     }
     else{ //regular calculation
-        newVal = queue_readElementAt(&(outputQueue[filterNumber]),INIT_VAL); //pulls newest value
+        newVal = queue_readElementAt(&(outputQueue[filterNumber]), INIT_VAL); //pulls newest value
         oldVal = oldestValue[filterNumber]; //pulls oldest value (not pushed off queue)
         power_sum = currentPowerValue[filterNumber];
         power_sum += ((newVal * newVal) - (oldVal * oldVal)); //adds newest square and subtracts oldest sum
