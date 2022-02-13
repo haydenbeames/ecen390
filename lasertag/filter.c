@@ -33,7 +33,7 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
 
 #define NUM_IIR_FILTERS 10      //Queue constants
 #define QUEUE_INIT_VAL 0.0
-#define X_QUEUE_SIZE FIR_COEF_COUNT      //not sure yet
+#define X_QUEUE_SIZE 81  //not sure yet
 #define Y_QUEUE_SIZE IIR_B_COEF_COUNT    //not sure yet
 #define Z_QUEUE_SIZE IIR_A_COEF_COUNT    //confirmed
 #define OUTPUT_QUEUE_SIZE 2000                  //confirmed
@@ -106,7 +106,7 @@ void initZQueue(){
     char* name;
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
         sprintf(name, "z%d", i); //creates name for init function
-        //zQueues[i] = queue_t q;
+        //zQueue[i] = queue_t q;
         initQueue(&(zQueue[i]), Z_QUEUE_SIZE, name);//uses custom function to init and fill with values
     }
 }
@@ -117,7 +117,7 @@ void initOutputQueue() {
     for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) { //makes each queue instance
         sprintf(name, "output%d", i);
         //outputQueue[i] = queue_t q;
-        initQueue(&(zQueue[i]), OUTPUT_QUEUE_SIZE, name);//uses custom function to init and fill with values
+        initQueue(&(outputQueue[i]), OUTPUT_QUEUE_SIZE, name);//uses custom function to init and fill with values
     }
 }
 
@@ -149,8 +149,8 @@ void filter_fillQueue(queue_t *q, double fillValue){
 // Invokes the FIR-filter. Input is contents of xQueue.
 // Output is returned and is also pushed on to yQueue.
 double filter_firFilter() {
-    double y = 0.0; //starts sum at 0
-    for(uint32_t i = 0; i < Y_QUEUE_SIZE; i++) { //for y queue
+    double y = INIT_VAL_DOUBLE; //starts sum at 0
+    for(uint32_t i = 0; i < FIR_COEF_COUNT; i++) { //for y queue
        y += queue_readElementAt(&xQueue, FIR_COEF_COUNT-1-i) * fir_coef[i];
     }
     queue_overwritePush(&yQueue, y);
@@ -170,10 +170,12 @@ double filter_iirFilter(uint16_t filterNumber){
     }
 
     //IIR A coefficients - iteratively adds coef * z val
+    a_coef_sum = 0.0;
     for(uint32_t i = INIT_VAL; i < IIR_A_COEF_COUNT; i++){
         a_coef_sum += iir_a_coef[filterNumber][i] * queue_readElementAt(&(zQueue[filterNumber]), IIR_A_COEF_COUNT -1 -i);
     }
     total_sum = b_coef_sum - a_coef_sum;
+    //printf("TOTAL SUM:  %f\n", total_sum);
 
     queue_overwritePush(&(zQueue[filterNumber]), total_sum);
     queue_overwritePush(&(outputQueue[filterNumber]), total_sum);
@@ -203,7 +205,7 @@ double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, 
     if(forceComputeFromScratch){
         //iterates through length of queue to add the square of each element
         for(uint32_t i = INIT_VAL; i < qLength; i++){
-            currVal = queue_readElementAt(&(outputQueue[filterNumber]),i); //access queue once
+            currVal = queue_readElementAt(&(outputQueue[filterNumber]), i); //access queue once
             power_sum += (currVal * currVal); //summing currVal^2
         }
         
