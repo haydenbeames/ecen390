@@ -201,6 +201,7 @@ double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, 
     double newVal;
     double oldVal;
     uint32_t qLength = queue_elementCount(&(outputQueue[filterNumber])); //access length once
+    
     //force case
     if(forceComputeFromScratch){
         //iterates through length of queue to add the square of each element
@@ -211,13 +212,13 @@ double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, 
         
     }
     else{ //regular calculation
-        newVal = queue_readElementAt(&(outputQueue[filterNumber]), INIT_VAL); //pulls newest value
+        newVal = queue_readElementAt(&(outputQueue[filterNumber]), qLength - 1); //pulls newest value
         oldVal = oldestValue[filterNumber]; //pulls oldest value (not pushed off queue)
         power_sum = currentPowerValue[filterNumber];
         power_sum += ((newVal * newVal) - (oldVal * oldVal)); //adds newest square and subtracts oldest sum
     }
 
-    oldestValue[filterNumber] = queue_readElementAt(&(outputQueue[filterNumber]), qLength - 1); //saves oldest index for next power calculation
+    oldestValue[filterNumber] = queue_readElementAt(&(outputQueue[filterNumber]), INIT_VAL); //saves oldest index for next power calculation
     currentPowerValue[filterNumber] = power_sum; //save power sum to array
     return power_sum;
 }
@@ -244,10 +245,10 @@ void filter_getCurrentPowerValues(double powerValues[]){
 // argument and then normalize them by dividing all of the values in
 // normalizedArray by the maximum power value contained in currentPowerValue[].
 void filter_getNormalizedPowerValues(double normalizedArray[], uint16_t *indexOfMaxValue){
-    for(uint32_t i = 0; i < NUM_IIR_FILTERS; i++) {
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) {
         normalizedArray[i] = currentPowerValue[i];
     }
-    for(uint32_t i = 0; i < NUM_IIR_FILTERS; i++) {
+    for(uint32_t i = INIT_VAL; i < NUM_IIR_FILTERS; i++) {
         normalizedArray[i] = normalizedArray[i] / currentPowerValue[*indexOfMaxValue];
     }
 }
