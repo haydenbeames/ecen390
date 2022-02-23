@@ -1,5 +1,6 @@
 #include "hitLedTimer.h"
 #include "led.h"
+#include "utils.h"
 
 // The lockoutTimer is active for 1/2 second once it is started.
 // It is used to lock-out the detector once a hit has been detected.
@@ -24,6 +25,9 @@ static enum hitLedTimer_st_t hitLedTimer_oldState;
 #define INIT_VAL 0
 #define PIN_HIGH 1
 #define PIN_LOW 0
+#define LD0_ON 0x1
+#define LD0_OFF 0x0
+#define RUNTEST_DELAY 300
 
 //Variables
 static uint16_t lightTimer;
@@ -62,7 +66,9 @@ void hitLedTimer_tick(){
             break;
         
         case wait_for_start_st:     //WAIT FOR START
-            if(start){ //running hit LED
+            if(!enabled) //disabled
+                hitLedTimer_currentState = disabled_st;
+            else if(start){ //running hit LED
                 hitLedTimer_currentState = hit_Detected_st;
                 hitLedTimer_turnLedOn();
             }
@@ -117,6 +123,7 @@ void hitLedTimer_init(){
     start = false;
     lightTimer = INIT_VAL;
 
+    leds_init(false);
     mio_init(false);
     mio_setPinAsOutput(HIT_LED_TIMER_OUTPUT_PIN);
 
@@ -125,13 +132,13 @@ void hitLedTimer_init(){
 // Turns the gun's hit-LED on.
 void hitLedTimer_turnLedOn(){
     mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, PIN_HIGH); //mio pin
-    //LED
+    leds_write(LD0_ON); //LED
 }
 
 // Turns the gun's hit-LED off.
 void hitLedTimer_turnLedOff(){
     mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, PIN_LOW); //mio pin
-    //LED
+    leds_write(LD0_OFF); //LED
 }
 
 // Disables the hitLedTimer.
@@ -147,7 +154,11 @@ void hitLedTimer_enable(){
 // Runs a visual test of the hit LED.
 // The test continuously blinks the hit-led on and off.
 void hitLedTimer_runTest(){
-    
+    while(true){ //constant loop
+        hitLedTimer_start(); //start hit indicator
+        while(hitLedTimer_running()); //waits until done
+        utils_msDelay(RUNTEST_DELAY); //delay on off
+    }
 }
 
 //Helper Functions
