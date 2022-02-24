@@ -1,6 +1,10 @@
 #include "hitLedTimer.h"
-#include "led.h"
+#include "leds.h"
 #include "utils.h"
+#include "mio.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 // The lockoutTimer is active for 1/2 second once it is started.
 // It is used to lock-out the detector once a hit has been detected.
@@ -77,7 +81,7 @@ void hitLedTimer_tick(){
             break;
         
         case hit_Detected_st:       //HIT DETECTED
-            if(lightTime < HIT_LED_TIMER_EXPIRE_VALUE) //still counting
+            if(lightTimer < HIT_LED_TIMER_EXPIRE_VALUE) //still counting
                 hitLedTimer_currentState = hit_Detected_st;
             
             else{ //count done, truns off LED

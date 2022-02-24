@@ -1,6 +1,6 @@
 #include "lockoutTimer.h"
 #include "intervalTimer.h"
-
+#include <stdio.h>
 
 //#define LOCKOUT_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
 
@@ -22,7 +22,7 @@ static uint16_t lockoutTimer;
 static bool run;
 
 //Helper Functions
-void printState();
+void lockoutprintState();
 
 // Calling this starts the timer.
 void lockoutTimer_start(){
@@ -74,7 +74,7 @@ void lockoutTimer_tick(){
 
     //debug function if transition occurred
     if(lockoutTimer_currentState != lockoutTimer_oldState)
-        printState();
+        lockoutprintState();
 
     //State Actions
     switch(lockoutTimer_currentState){
@@ -95,7 +95,7 @@ void lockoutTimer_tick(){
 
 //Helper Functions
 
-void printState(){ //prints current state
+void lockoutprintState(){ //prints current state
     switch(lockoutTimer_currentState){ //print for each state
         case init_st:       //INIT
             printf("init\n");
@@ -122,7 +122,7 @@ void printState(){ //prints current state
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
 bool lockoutTimer_runTest(){
-    printf("Lockout Timer Run Test\n")
+    printf("Lockout Timer Run Test\n");
     lockoutTimer_init();
     intervalTimer_init(INTERVAL_TIMER_TIMER_1); //using Timer 1
     intervalTimer_start(INTERVAL_TIMER_TIMER_1); //start

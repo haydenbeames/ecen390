@@ -1,5 +1,9 @@
 #include "isr.h"
 #include "transmitter.h"
+#include "trigger.h"
+#include "lockoutTimer.h"
+#include "hitLedTimer.h"
+#include "transmitter.h"
 
 /*
 typedef uint32_t
@@ -12,7 +16,12 @@ typedef uint32_t
 // the code in isr.c. Values are removed from this queue by code in detector.c
 
 // Performs inits for anything in isr.c
-void isr_init();
+void isr_init() {
+    trigger_init();
+    lockoutTimer_init();
+    transmitter_init();
+    hitLedTimer_init();
+}
 
 // This function is invoked by the timer interrupt at 100 kHz.
 void isr_function(){ //Task 2

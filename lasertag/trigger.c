@@ -2,6 +2,7 @@
 #include "transmitter.h"
 #include "mio.h"
 #include "buttons.h"
+#include <stdio.h>
 
 // The trigger state machine debounces both the press and release of gun
 // trigger. Ultimately, it will activate the transmitter when a debounced press
@@ -37,7 +38,7 @@ static trigger_shotsRemaining_t shotCount;
 
 //Helper Functions
 bool triggerPressed(); //returns input from trigger pins
-void printState(bool runTest); //prints state transitions for debugging
+void triggerprintState(bool runTest); //prints state transitions for debugging
 
 
 // Init trigger data-structures.
@@ -48,12 +49,12 @@ void trigger_init(){
     debounceTimer = INIT_VAL;
     shotCount = INIT_VAL;
     runTest = false;
-    ignorGunInput = false; //assumes gun connected, confirmed later
+    ignoreGunInput = false; //assumes gun connected, confirmed later
 
     buttons_init(); //init to read in trigger from BTN0 and MIO pin
     mio_init(false); 
     mio_setPinAsInput(MIO_TRIGGER_PIN); //sets trigger pin as input
-    ignoreGunInput = triggerPressed() //if high already, then gun not connected
+    ignoreGunInput = triggerPressed(); //if high already, then gun not connected
 }
 
 // Enable the trigger state machine. The trigger state-machine is inactive until
@@ -148,7 +149,7 @@ void trigger_tick(){
 
     //debug function if transition occurred
     if(trigger_currentState != trigger_oldState)
-        printState(runTest);
+        triggerprintState(runTest);
 
     //State Actions
     switch(trigger_currentState){
@@ -182,7 +183,7 @@ void trigger_tick(){
 // is pressed, and a 'U' when the trigger or BTN0 is released.
 void trigger_runTest(){
     printf("Trigger Run Test. Press BTN1 to stop and BTN0 to fire\n");
-    trigger_init() //inits
+    trigger_init(); //inits
     runTest = true; //sets flag for changed debugging print
     while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //runs until BTN1
         trigger_tick(); //tick function to run SM
@@ -194,11 +195,11 @@ void trigger_runTest(){
 //returns input from trigger pins
 bool triggerPressed(){
     return ( (!ignoreGunInput && (mio_readPin(MIO_TRIGGER_PIN) == TRIGGER_HIGH)) ||
-                (buttons_read() & BUTTONS_BTN0_MASK) )
+                (buttons_read() & BUTTONS_BTN0_MASK) );
 }
 
 //prints state transitions for debugging - if input is true, does run test printing
-void printState(bool runTest){
+void triggerprintState(bool runTest){
     if(!runTest){  //regular debugging prints 
         switch(trigger_currentState){
             case init_st:               //INIT
@@ -256,4 +257,5 @@ void printState(bool runTest){
                 printf("Error - Default\n");
                 break;
     }
+}
 }
