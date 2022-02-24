@@ -111,7 +111,7 @@ void trigger_tick(){
 
                 else{ //timer done: debounced successfully
                     trigger_currentState = transmit_st;
-                    transmitter_run();
+                    transmitter_run(); //starts transmitter
                 }
             }
             else //bounced, not settled yet
@@ -119,7 +119,7 @@ void trigger_tick(){
             break;
         
         case transmit_st:           //TRANSMIT
-            if(triggerPressed())
+            if(triggerPressed()) //still pressed
                 trigger_currentState = transmit_st;
             else{
                 trigger_currentState = debounce_Release_st;
