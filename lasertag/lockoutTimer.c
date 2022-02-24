@@ -122,6 +122,8 @@ void printState(){ //prints current state
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
 bool lockoutTimer_runTest(){
+    printf("Lockout Timer Run Test\n")
+    lockoutTimer_init();
     intervalTimer_init(INTERVAL_TIMER_TIMER_1); //using Timer 1
     intervalTimer_start(INTERVAL_TIMER_TIMER_1); //start
     

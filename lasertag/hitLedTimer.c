@@ -154,6 +154,7 @@ void hitLedTimer_enable(){
 // Runs a visual test of the hit LED.
 // The test continuously blinks the hit-led on and off.
 void hitLedTimer_runTest(){
+    printf("HitLedTimer Run test: stop simulation to end\n");
     while(true){ //constant loop
         hitLedTimer_start(); //start hit indicator
         while(hitLedTimer_running()); //waits until done

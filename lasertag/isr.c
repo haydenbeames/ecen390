@@ -16,10 +16,10 @@ void isr_init();
 
 // This function is invoked by the timer interrupt at 100 kHz.
 void isr_function(){ //Task 2
-    //trigger_tick();         //ticks for all SM's
+    trigger_tick();         //ticks for all SM's
     transmitter_tick();
-    //hitLedTimer_tick();
-    //lockoutTimer_tick();
+    hitLedTimer_tick();
+    lockoutTimer_tick();
 }
 
 // This adds data to the ADC queue. Data are removed from this queue and used by

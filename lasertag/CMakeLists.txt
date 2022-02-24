@@ -5,10 +5,10 @@ add_executable(lasertag.elf
  filterTest.c
  histogram.c
  isr.c
- #trigger.c
+ trigger.c
  transmitter.c
-# hitLedTimer.c
-# lockoutTimer.c
+ hitLedTimer.c
+ lockoutTimer.c
 # detector.c
 # sound.c
 # timer_ps.c

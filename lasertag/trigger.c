@@ -181,6 +181,7 @@ void trigger_tick(){
 // The test just prints out a 'D' when the trigger or BTN0
 // is pressed, and a 'U' when the trigger or BTN0 is released.
 void trigger_runTest(){
+    printf("Trigger Run Test. Press BTN1 to stop and BTN0 to fire\n");
     trigger_init() //inits
     runTest = true; //sets flag for changed debugging print
     while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //runs until BTN1
