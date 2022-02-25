@@ -14,7 +14,6 @@
 #define TRANSMITTER_TEST_TICK_PERIOD_IN_MS 10
 #define BOUNCE_DELAY 5
 
-
 #define INIT_ST_MSG "init_st\n"
 #define WAITING_FOR_ACTIVATION_ST_MSG "waiting_for_activation_st\n"
 #define HIGH_ST_MSG "high_st\n"
@@ -23,13 +22,14 @@
 #define NON_CONTINUOUS FALSE
 
 static uint16_t msCount200 = 0;
-static uint16_t timeCount = 0; //counts how long on or off pulse should be based on the frequency
-static bool ledFirstPass = false; 
-static bool active = false;
-static bool continuous = NON_CONTINUOUS; //non-continuous default
-static uint16_t frequencyNum = 0;
-static uint16_t timeCountMax = 0;
-static bool transmitterRunningFlag = false;
+volatile static uint16_t timeCount = 0; //counts how long on or off pulse should be based on the frequency
+volatile static bool ledFirstPass = false; 
+volatile static bool firstPassWaveform = false; 
+volatile static bool active = false;
+volatile static bool continuous = NON_CONTINUOUS; //non-continuous default
+volatile static uint16_t frequencyNumGlobal = 1;
+volatile static uint16_t timeCountMax = 5;
+volatile static bool transmitterRunningFlag = false;
 
 enum transmitter_st_t {
 	init_st,                 // Start here, transition out of this state on the first tick.
@@ -38,7 +38,6 @@ enum transmitter_st_t {
 	low_st    // set low part of period
 };
 static enum transmitter_st_t currentState;
-
 
 //debug helper function
 void debugStatePrint() {
@@ -91,14 +90,16 @@ bool transmitter_running() {
     return transmitterRunningFlag;
 }
 void transmitter_setFrequencyNumber(uint16_t frequencyNumber) {
-    frequencyNum = filter_frequencyTickTable[frequencyNumber];
+    frequencyNumGlobal = filter_frequencyTickTable[frequencyNumber];
 }
 uint16_t transmitter_getFrequencyNumber() {
-    return frequencyNum;
+    return frequencyNumGlobal;
 }
+//disable test mode helper
 void transmitter_disableTestMode() {
 
 }
+//enable test mode helper
 void transmitter_enableTestMode() {
     
 }
@@ -107,13 +108,36 @@ void transmitter_setContinuousMode(bool continuousModeFlag) {
 }
 void transmitter_runNoncontinuousTest() {
     continuous = NON_CONTINUOUS;
-    transmitter_tick();
-    debugStatePrint();
+    printf("starting transmitter_runTest()\n");
+    mio_init(false);
+    buttons_init();                                         // Using buttons
+    switches_init();                                        // and switches.
+    transmitter_init();                                     // init the transmitter.
+    transmitter_enableTestMode();  
+    while (!(buttons_read() & BUTTONS_BTN1_MASK)) {         // Run continuously until BTN1 is pressed.
+    uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
+    //printf("SW VAL:  %d\n", switchValue);
+    
+    transmitter_setFrequencyNumber(switchValue);          // set the frequency number based upon switch value.
+    transmitter_run();  
+       
+    // Start the transmitter.
+    //while (transmitter_running()) {  
+    while (transmitter_running()) { 
+      
+    }            
+       // printf("WHILE LOOP\n");             // Keep ticking until it is done.
+    //printf("%s\n", currentState)
+      // tick.
+     // short delay between ticks.
+    //}
+    printf("completed one test period.\n");
+  }
+  transmitter_disableTestMode();
+  
 }
-void transmitter_runContinuousTest() {
+void transmitter_runContinuousTest() {    
     continuous = CONTINUOUS;
-    transmitter_tick();
-    debugStatePrint();
 }
 void transmitter_runTest() {
   printf("starting transmitter_runTest()\n");
@@ -121,11 +145,14 @@ void transmitter_runTest() {
   buttons_init();                                         // Using buttons
   switches_init();                                        // and switches.
   transmitter_init();                                     // init the transmitter.
-  transmitter_enableTestMode();                           // Prints diagnostics to stdio.
+  transmitter_enableTestMode();  
+  // Prints diagnostics to stdio.
   while (!(buttons_read() & BUTTONS_BTN1_MASK)) {         // Run continuously until BTN1 is pressed.
     uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
+    //printf("SW VAL:  %d\n", switchValue);
     transmitter_setFrequencyNumber(switchValue);          // set the frequency number based upon switch value.
-    transmitter_run();                                    // Start the transmitter.
+    transmitter_run();        
+    // Start the transmitter.
     while (transmitter_running()) {  
       debugStatePrint();        
        // printf("WHILE LOOP\n");             // Keep ticking until it is done.
@@ -142,21 +169,27 @@ void transmitter_runTest() {
 
 void transmitter_tick() {  
   // Perform state update first.
+  debugStatePrint();
   switch(currentState) {
     case init_st:
         currentState = waiting_for_activation_st;
         break;
       case waiting_for_activation_st:
         //if active go to high state to start waveform
+        timeCountMax = transmitter_getFrequencyNumber() / 2.0;
         
-        if(active = true) {
-            timeCountMax = transmitter_getFrequencyNumber() / 2.0;
+        //high state if active and continuous
+        if ((active = true) && (continuous == NON_CONTINUOUS)) {
+            currentState = high_st;
+        }
+        //go to high state if continuous
+        if (continuous == CONTINUOUS) {
             currentState = high_st;
         }
         break;
       case high_st:
-      printf("%d ", timeCount);
         //turn JF1 pin on
+        printf("%d\n", timeCountMax);
         if(!ledFirstPass) {
             ledFirstPass = true;
             transmitter_set_jf1_to_one();
@@ -171,8 +204,7 @@ void transmitter_tick() {
             timeCount = 0;
             currentState = low_st;
         }
-        else {
-            
+        else {     
             ledFirstPass = 0;
             currentState = high_st;
         }
@@ -187,9 +219,10 @@ void transmitter_tick() {
         //check if time off is at max
         if ((timeCount >= timeCountMax) && (msCount200 != TRANSMITTER_PULSE_WIDTH)) {
             timeCount = 0;
-            currentState = low_st;
+            currentState = high_st;
         }
         else if(msCount200 >= TRANSMITTER_PULSE_WIDTH) {
+            firstPassWaveform = true;
             active = false;
             transmitterRunningFlag = false;
             timeCount = 0;
@@ -205,7 +238,6 @@ void transmitter_tick() {
       // print an error message here.
       break;
   }
-  
   // Perform state action next.
   switch(currentState) {
     case init_st:
@@ -216,11 +248,11 @@ void transmitter_tick() {
         break;
       case high_st:
         ++timeCount;
-        msCount200 = msCount200 + 100;
+        ++msCount200;
         break;
       case low_st:
         ++timeCount;
-        msCount200 = msCount200 + 100;
+        ++msCount200;
         break;
      default:
       // print an error message here.

@@ -49,7 +49,7 @@ int main() {
 #ifdef RUNNING_MODE_TESTS
   //queue_runTest(); // M1
   // filterTest_runTest(); // M3 T1
-   transmitter_runTest(); // M3 T2
+  // transmitter_runTest(); // M3 T2
   // detector_runTest(); // M3 T3
   // sound_runTest(); // M4
 #endif
@@ -64,8 +64,9 @@ int main() {
   interrupts_startArmPrivateTimer();  // start the main timer.
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
-  transmitter_runNoncontinuousTest();
   //transmitter_runContinuousTest();
+  
+  transmitter_runNoncontinuousTest();
   //trigger_runTest();
   //hitLedTimer_runTest();
   //lockoutTimer_runTest();
