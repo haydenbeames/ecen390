@@ -29,6 +29,10 @@ void isr_init() {
 void isr_function(){ //Task 2
     //trigger_tick();  
     //ticks for all SM's
+    uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
+    //printf("SW VAL:  %d\n", switchValue);
+    
+    transmitter_setFrequencyNumber(switchValue);
     transmitter_tick();
     
     
