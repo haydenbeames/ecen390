@@ -113,6 +113,7 @@ void trigger_tick(){
                 else{ //timer done: debounced successfully
                     trigger_currentState = transmit_st;
                     transmitter_run(); //starts transmitter
+                    shotCount--; //takes away one shot from shotCount
                 }
             }
             else //bounced, not settled yet
@@ -122,7 +123,7 @@ void trigger_tick(){
         case transmit_st:           //TRANSMIT
             if(triggerPressed()) //still pressed
                 trigger_currentState = transmit_st;
-            else{
+            else{ //ending transmit
                 trigger_currentState = debounce_Release_st;
                 debounceTimer = INIT_VAL;
             }
@@ -260,6 +261,6 @@ void triggerprintState(bool runTest){
             default:                    //DEFAULT
                 printf("Error - Default\n");
                 break;
+        }
     }
-}
 }

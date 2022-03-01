@@ -123,12 +123,12 @@ void hitLedTimer_tick(){
 
 // Need to init things.
 void hitLedTimer_init(){
-    hitLedTimer_currentState = init_st;
+    hitLedTimer_currentState = init_st; //starts values
     enabled = false;
     start = false;
     lightTimer = INIT_VAL;
 
-    leds_init(false);
+    leds_init(false); //init outputs
     mio_init(false);
     mio_setPinAsOutput(HIT_LED_TIMER_OUTPUT_PIN);
 
@@ -160,9 +160,10 @@ void hitLedTimer_enable(){
 // The test continuously blinks the hit-led on and off.
 void hitLedTimer_runTest(){
     printf("HitLedTimer Run test: BTN1 to end\n");
-    buttons_init();
+    buttons_init(); //init
     hitLedTimer_init();
-    while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //constant loop
+
+    while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //loop until stopped
         hitLedTimer_start(); //start hit indicator
         hitLedTimer_tick();
         while(hitLedTimer_running()){ //waits until done
