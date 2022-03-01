@@ -13,6 +13,8 @@
 #define TRANSMITTER_LOW_VALUE 0
 #define TRANSMITTER_TEST_TICK_PERIOD_IN_MS 10
 #define BOUNCE_DELAY 5
+#define DUTY_CYCLE_DIVISOR 2.0
+#define DELAY_NON_CONTINUOUS 400
 
 #define INIT_ST_MSG "init_st\n"
 #define WAITING_FOR_ACTIVATION_ST_MSG "waiting_for_activation_st\n"
@@ -117,7 +119,7 @@ void transmitter_runNoncontinuousTest() {
       while (transmitter_running()) {  
 
       }
-      utils_msDelay(400);
+      utils_msDelay(DELAY_NON_CONTINUOUS);
     }
     transmitter_disableTestMode();
 }
@@ -158,16 +160,16 @@ void transmitter_runTest() {
   printf("exiting transmitter_runTest()\n");
 }
 
+//transmitter tick function
 void transmitter_tick() {  
-
-  //debugStatePrint();
+  //transmitter tick
   switch(currentState) {
     case init_st:
         currentState = waiting_for_activation_st;
         break;
       case waiting_for_activation_st:
         //if active go to high state to start waveform
-        timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
+        timeCountMax = (transmitter_getFrequencyNumber() / DUTY_CYCLE_DIVISOR);
 
         //high state if active and continuous
         if ((active == true) && (continuous == NON_CONTINUOUS)) {
@@ -181,36 +183,26 @@ void transmitter_tick() {
         }
         break;
       case high_st:
-      //printf("           %d\n", timeCount);
-      //printf("%d\n", timeCountMax);
-        
         //check if time on is at max
         if (timeCount >= timeCountMax) {
-         
             timeCount = 0;
             transmitter_set_jf1_to_zero();    
             currentState = low_st;
         }
         else if (continuous == CONTINUOUS) {
-          
-            timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
+            timeCountMax = (transmitter_getFrequencyNumber() / DUTY_CYCLE_DIVISOR);
         }
         else { 
-             
             currentState = high_st;
         }
-        //printf("             %d\n", msCount200);
         break;
       case low_st:
-        //printf("%d\n", timeCount);
-        //turn JF1 pin off
-        if(msCount200 >= TRANSMITTER_PULSE_WIDTH) {
-        
+        //200 ms count and low state
+        if(msCount200 >= TRANSMITTER_PULSE_WIDTH) {   
             active = false;
             transmitterRunningFlag = false;
             timeCount = 0;
             msCount200 = 0;
-            //printf("COMPLETE CYCLE");
             currentState = waiting_for_activation_st;
         }
         //check if time off is at max
