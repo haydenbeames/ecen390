@@ -15,6 +15,7 @@ static enum lockoutTimer_st_t lockoutTimer_oldState;
 
 //Constants
 #define INIT_VAL 0
+#define RUNTEST_DELAY 0.01
 
 
 //Variables
@@ -129,8 +130,11 @@ bool lockoutTimer_runTest(){
     
     //Run Lockout Timer
     lockoutTimer_start();
-    while(lockoutTimer_running());
+    while(lockoutTimer_running()){ //runs state machine until finished
+        lockoutTimer_tick();
+        utils_msDelay(RUNTEST_DELAY); //100,000 Hz rate
+    }
 
     intervalTimer_stop(INTERVAL_TIMER_TIMER_1); //stop timer
-    printf("Lockout Timer: %f", intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1));
+    printf("Lockout Timer: %f", intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1)); //prints output
 }

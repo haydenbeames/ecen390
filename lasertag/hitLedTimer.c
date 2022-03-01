@@ -2,6 +2,7 @@
 #include "leds.h"
 #include "utils.h"
 #include "mio.h"
+#include "buttons.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -158,10 +159,15 @@ void hitLedTimer_enable(){
 // Runs a visual test of the hit LED.
 // The test continuously blinks the hit-led on and off.
 void hitLedTimer_runTest(){
-    printf("HitLedTimer Run test: stop simulation to end\n");
-    while(true){ //constant loop
+    printf("HitLedTimer Run test: BTN1 to end\n");
+    buttons_init();
+    hitLedTimer_init();
+    while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //constant loop
         hitLedTimer_start(); //start hit indicator
-        while(hitLedTimer_running()); //waits until done
+        hitLedTimer_tick();
+        while(hitLedTimer_running()){ //waits until done
+            hitLedTimer_tick();
+        }
         utils_msDelay(RUNTEST_DELAY); //delay on off
     }
 }

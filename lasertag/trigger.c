@@ -186,7 +186,10 @@ void trigger_runTest(){
     trigger_init(); //inits
     runTest = true; //sets flag for changed debugging print
     trigger_enable(); //starts SM
-    while(!(buttons_read() & BUTTONS_BTN1_MASK)); //runs until BTN1
+    trigger_tick();
+    while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //runs until BTN1
+        trigger_tick();
+    }
     trigger_disable(); //stops SM, ends test
     printf("End Trigger Run Test\n");
 }
