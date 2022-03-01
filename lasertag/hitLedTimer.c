@@ -32,7 +32,7 @@ static enum hitLedTimer_st_t hitLedTimer_oldState;
 #define PIN_LOW 0
 #define LD0_ON 0x1
 #define LD0_OFF 0x0
-#define RUNTEST_DELAY 300
+#define RUNTEST_DELAY 500
 
 //Variables
 static uint16_t lightTimer;
@@ -89,6 +89,7 @@ void hitLedTimer_tick(){
                 hitLedTimer_currentState = wait_for_start_st;
                 start = false; //lowers running flag
                 hitLedTimer_turnLedOff();
+                lightTimer = INIT_VAL;
             }
             break;
         
@@ -98,8 +99,8 @@ void hitLedTimer_tick(){
     }
 
     //debug function if transition occurred
-    if(hitLedTimer_currentState != hitLedTimer_oldState)
-        printState();
+    //if(hitLedTimer_currentState != hitLedTimer_oldState)
+        //printState();
     
     //State Actions
     switch(hitLedTimer_currentState){
@@ -162,12 +163,14 @@ void hitLedTimer_runTest(){
     printf("HitLedTimer Run test: BTN1 to end\n");
     buttons_init(); //init
     hitLedTimer_init();
+    hitLedTimer_enable();
+
+    utils_msDelay(1000);
 
     while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //loop until stopped
         hitLedTimer_start(); //start hit indicator
-        hitLedTimer_tick();
         while(hitLedTimer_running()){ //waits until done
-            hitLedTimer_tick();
+            utils_msDelay(1);
         }
         utils_msDelay(RUNTEST_DELAY); //delay on off
     }
