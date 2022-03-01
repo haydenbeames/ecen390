@@ -28,7 +28,6 @@ static enum trigger_st_t trigger_oldState;
 #define MIO_TRIGGER_PIN 10
 #define TRIGGER_HIGH 1
 
-
 //State Machine Variables
 static bool enabled;
 static bool ignoreGunInput;
@@ -38,8 +37,8 @@ static trigger_shotsRemaining_t shotCount;
 
 //Helper Functions
 bool triggerPressed(); //returns input from trigger pins
+//trigger print state helper function
 void triggerprintState(bool runTest); //prints state transitions for debugging
-
 
 // Init trigger data-structures.
 // Determines whether the trigger switch of the gun is connected (see discussion
@@ -136,8 +135,7 @@ void trigger_tick(){
             }
             else{ //still low
                 if(debounceTimer < DEBOUNCE_TIMER_MAX) //still checking
-                    trigger_currentState = debounce_Release_st;
-                
+                    trigger_currentState = debounce_Release_st;  
                 else{ //passed debounce
                     trigger_currentState = wait_For_Trigger_st;
                     printf("U\n");
@@ -197,8 +195,6 @@ void trigger_runTest(){
     printf("End Trigger Run Test\n");
 }
 
-//Helper Functions
-
 //returns input from trigger pins
 bool triggerPressed(){
     return ( (!ignoreGunInput && (mio_readPin(MIO_TRIGGER_PIN) == TRIGGER_HIGH)) ||
@@ -207,6 +203,7 @@ bool triggerPressed(){
 
 //prints state transitions for debugging - if input is true, does run test printing
 void triggerprintState(bool runTest){
+    //do prints if run test
     if(!runTest){  //regular debugging prints 
         switch(trigger_currentState){
             case init_st:               //INIT

@@ -124,10 +124,9 @@ void transmitter_runNoncontinuousTest() {
     transmitter_disableTestMode();
 }
 void transmitter_runContinuousTest() {  
-  uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
-      transmitter_setFrequencyNumber(switchValue);  
+    uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
+    transmitter_setFrequencyNumber(switchValue);  
     transmitter_setContinuousMode(CONTINUOUS);
-     
     //do nonContinuous test while not button pressed
     while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
       uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
@@ -141,13 +140,11 @@ void transmitter_runTest() {
   switches_init();                                        // and switches.
   transmitter_init();                                     // init the transmitter.
   transmitter_enableTestMode();  
-
   // Prints diagnostics to stdio.
   while (!(buttons_read() & BUTTONS_BTN1_MASK)) {         // Run continuously until BTN1 is pressed.
     uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
     transmitter_setFrequencyNumber(switchValue);          // set the frequency number based upon switch value.
     transmitter_run();   
-
     // Start the transmitter.
     while (transmitter_running()) {  
       debugStatePrint();        
@@ -156,7 +153,6 @@ void transmitter_runTest() {
     printf("completed one test period.\n");
   }
   transmitter_disableTestMode();
-  
   printf("exiting transmitter_runTest()\n");
 }
 
@@ -170,7 +166,6 @@ void transmitter_tick() {
       case waiting_for_activation_st:
         //if active go to high state to start waveform
         timeCountMax = (transmitter_getFrequencyNumber() / DUTY_CYCLE_DIVISOR);
-
         //high state if active and continuous
         if ((active == true) && (continuous == NON_CONTINUOUS)) {
             transmitter_set_jf1_to_one();
