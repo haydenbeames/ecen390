@@ -21,15 +21,6 @@ enum hitLedTimer_st_t{
 static enum hitLedTimer_st_t hitLedTimer_currentState;
 static enum hitLedTimer_st_t hitLedTimer_oldState;
 
-//Constants
-#define INIT_VAL 0
-#define PIN_HIGH 1
-#define PIN_LOW 0
-#define LD0_ON 0x1
-#define LD0_OFF 0x0
-#define RUNTEST_DELAY 500
-#define MS_DELAY_TEN 1000
-
 //Variables
 static uint16_t lightTimer;
 static bool enabled;
@@ -84,7 +75,7 @@ void hitLedTimer_tick(){
                 hitLedTimer_currentState = wait_for_start_st;
                 start = false; //lowers running flag
                 hitLedTimer_turnLedOff();
-                lightTimer = INIT_VAL;
+                lightTimer = HIT_LED_TIMER_INIT_VAL;
             }
             break;
         
@@ -118,7 +109,7 @@ void hitLedTimer_init(){
     hitLedTimer_currentState = init_st; //starts values
     enabled = false;
     start = false;
-    lightTimer = INIT_VAL;
+    lightTimer = HIT_LED_TIMER_INIT_VAL;
 
     leds_init(false); //init outputs
     mio_init(false);
@@ -128,14 +119,14 @@ void hitLedTimer_init(){
 
 // Turns the gun's hit-LED on.
 void hitLedTimer_turnLedOn(){
-    mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, PIN_HIGH); //mio pin
-    leds_write(LD0_ON); //LED
+    mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, HIT_LED_TIMER_PIN_HIGH); //mio pin
+    leds_write(HIT_LED_TIMER_LD0_ON); //LED
 }
 
 // Turns the gun's hit-LED off.
 void hitLedTimer_turnLedOff(){
-    mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, PIN_LOW); //mio pin
-    leds_write(LD0_OFF); //LED
+    mio_writePin(HIT_LED_TIMER_OUTPUT_PIN, HIT_LED_TIMER_PIN_LOW); //mio pin
+    leds_write(HIT_LED_TIMER_LD0_OFF); //LED
 }
 
 // Disables the hitLedTimer.
@@ -156,14 +147,14 @@ void hitLedTimer_runTest(){
     hitLedTimer_init();
     hitLedTimer_enable();
 
-    utils_msDelay(MS_DELAY_TEN);
+    utils_msDelay(HIT_LED_TIMER_MS_DELAY_TEN);
     //while not button 1
     while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //loop until stopped
         hitLedTimer_start(); //start hit indicator
         while(hitLedTimer_running()){ //waits until done
             utils_msDelay(1);
         }
-        utils_msDelay(RUNTEST_DELAY); //delay on off
+        utils_msDelay(HIT_LED_TIMER_RUNTEST_DELAY); //delay on off
     }
 }
 

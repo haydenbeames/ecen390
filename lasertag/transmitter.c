@@ -8,27 +8,12 @@
 #include "buttons.h"
 #include "mio.h"
 
-#define TRANSMITTER_OUTPUT_PIN 13 //JF1 pin
-#define TRANSMITTER_HIGH_VALUE 1
-#define TRANSMITTER_LOW_VALUE 0
-#define TRANSMITTER_TEST_TICK_PERIOD_IN_MS 10
-#define BOUNCE_DELAY 5
-#define DUTY_CYCLE_DIVISOR 2.0
-#define DELAY_NON_CONTINUOUS 400
-
-#define INIT_ST_MSG "init_st\n"
-#define WAITING_FOR_ACTIVATION_ST_MSG "waiting_for_activation_st\n"
-#define HIGH_ST_MSG "high_st\n"
-#define LOW_ST_MSG "low_st\n"
-#define CONTINUOUS TRUE
-#define NON_CONTINUOUS FALSE
-
 static uint32_t msCount200 = 0;
 volatile static uint16_t timeCount = 0; //counts how long on or off pulse should be based on the frequency
 volatile static bool ledFirstPass = false; 
 volatile static bool firstPassWaveform = false; 
 volatile static bool active = false;
-volatile static bool continuous = NON_CONTINUOUS; //non-continuous default
+volatile static bool continuous = TRANSMITTER_NON_CONTINUOUS; //non-continuous default
 volatile static uint16_t frequencyNumGlobal = 1;
 volatile static uint16_t timeCountMax = 5;
 volatile static bool transmitterRunningFlag = false;
@@ -53,16 +38,16 @@ void debugStatePrint() {
     previousState = currentState;     // keep track of the last state that you were in.
     switch(currentState) {            // This prints messages based upon the state that you were in.
       case init_st:
-        printf(INIT_ST_MSG);
+        printf(TRANSMITTER_INIT_ST_MSG);
         break;
       case waiting_for_activation_st:
-        printf(WAITING_FOR_ACTIVATION_ST_MSG);
+        printf(TRANSMITTER_WAITING_FOR_ACTIVATION_ST_MSG);
         break;
       case high_st:
-        printf(HIGH_ST_MSG);
+        printf(TRANSMITTER_HIGH_ST_MSG);
         break;
       case low_st:
-        printf(LOW_ST_MSG);
+        printf(TRANSMITTER_LOW_ST_MSG);
         break;
      }
   }
@@ -109,7 +94,7 @@ void transmitter_setContinuousMode(bool continuousModeFlag) {
     continuous = continuousModeFlag;
 }
 void transmitter_runNoncontinuousTest() {
-    transmitter_setContinuousMode(NON_CONTINUOUS);
+    transmitter_setContinuousMode(TRANSMITTER_NON_CONTINUOUS);
     //do nonContinuous test while not button pressed
     while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
       uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
@@ -119,14 +104,14 @@ void transmitter_runNoncontinuousTest() {
       while (transmitter_running()) {  
 
       }
-      utils_msDelay(DELAY_NON_CONTINUOUS);
+      utils_msDelay(TRANSMITTER_DELAY_NON_CONTINUOUS);
     }
     transmitter_disableTestMode();
 }
 void transmitter_runContinuousTest() {  
     uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
     transmitter_setFrequencyNumber(switchValue);  
-    transmitter_setContinuousMode(CONTINUOUS);
+    transmitter_setContinuousMode(TRANSMITTER_CONTINUOUS);
     //do nonContinuous test while not button pressed
     while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
       uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
@@ -165,14 +150,14 @@ void transmitter_tick() {
         break;
       case waiting_for_activation_st:
         //if active go to high state to start waveform
-        timeCountMax = (transmitter_getFrequencyNumber() / DUTY_CYCLE_DIVISOR);
+        timeCountMax = (transmitter_getFrequencyNumber() / TRANSMITTER_DUTY_CYCLE_DIVISOR);
         //high state if active and continuous
-        if ((active == true) && (continuous == NON_CONTINUOUS)) {
+        if ((active == true) && (continuous == TRANSMITTER_NON_CONTINUOUS)) {
             transmitter_set_jf1_to_one();
             currentState = high_st;
         }
         //go to high state if continuous
-        else if (continuous == CONTINUOUS) {
+        else if (continuous == TRANSMITTER_CONTINUOUS) {
             transmitter_set_jf1_to_one();
             currentState = high_st;
         }
@@ -184,8 +169,8 @@ void transmitter_tick() {
             transmitter_set_jf1_to_zero();    
             currentState = low_st;
         }
-        else if (continuous == CONTINUOUS) {
-            timeCountMax = (transmitter_getFrequencyNumber() / DUTY_CYCLE_DIVISOR);
+        else if (continuous == TRANSMITTER_CONTINUOUS) {
+            timeCountMax = (transmitter_getFrequencyNumber() / TRANSMITTER_DUTY_CYCLE_DIVISOR);
         }
         else { 
             currentState = high_st;

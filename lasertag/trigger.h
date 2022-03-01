@@ -12,6 +12,12 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 
 #include <stdint.h>
 
+//State Machine Constants
+#define TRIGGER_INIT_VAL 0
+#define TRIGGER_DEBOUNCE_TIMER_MAX 15000
+#define TRIGGER_MIO_TRIGGER_PIN 10
+#define TRIGGER_HIGH 1
+
 // The trigger state machine debounces both the press and release of gun
 // trigger. Ultimately, it will activate the transmitter when a debounced press
 // is detected.

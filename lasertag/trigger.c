@@ -20,12 +20,6 @@ enum trigger_st_t{
 static enum trigger_st_t trigger_currentState;
 static enum trigger_st_t trigger_oldState;
 
-//State Machine Constants
-#define INIT_VAL 0
-#define DEBOUNCE_TIMER_MAX 15000
-#define MIO_TRIGGER_PIN 10
-#define TRIGGER_HIGH 1
-
 //State Machine Variables
 static bool enabled;
 static bool ignoreGunInput;
@@ -43,14 +37,14 @@ void triggerprintState(bool runTest); //prints state transitions for debugging
 // in lab web pages). Initializes the mio subsystem.
 void trigger_init(){
     trigger_currentState = init_st;
-    debounceTimer = INIT_VAL;
-    shotCount = INIT_VAL;
+    debounceTimer = TRIGGER_INIT_VAL;
+    shotCount = TRIGGER_INIT_VAL;
     runTest = false;
     ignoreGunInput = false; //assumes gun connected, confirmed later
 
     buttons_init(); //init to read in trigger from BTN0 and MIO pin
     mio_init(false); 
-    mio_setPinAsInput(MIO_TRIGGER_PIN); //sets trigger pin as input
+    mio_setPinAsInput(TRIGGER_MIO_TRIGGER_PIN); //sets trigger pin as input
     ignoreGunInput = triggerPressed(); //if high already, then gun not connected
 }
 
@@ -96,7 +90,7 @@ void trigger_tick(){
         case wait_For_Trigger_st:   //WAIT FOR TRIGGER
             if(triggerPressed()){ //trigger pull detected
                 trigger_currentState = debounce_Trigger_st;
-                debounceTimer = INIT_VAL; //clears timer
+                debounceTimer = TRIGGER_INIT_VAL; //clears timer
             }
             else //keeps waiting
                 trigger_currentState = wait_For_Trigger_st;
@@ -104,7 +98,7 @@ void trigger_tick(){
         
         case debounce_Trigger_st:   //DEBOUNCE TRIGGER
             if(triggerPressed()){ //still pressed
-                if(debounceTimer < DEBOUNCE_TIMER_MAX) //timer not done yet
+                if(debounceTimer < TRIGGER_DEBOUNCE_TIMER_MAX) //timer not done yet
                     trigger_currentState = debounce_Trigger_st; //stays
 
                 else{ //timer done: debounced successfully
@@ -123,7 +117,7 @@ void trigger_tick(){
                 trigger_currentState = transmit_st;
             else{ //ending transmit
                 trigger_currentState = debounce_Release_st;
-                debounceTimer = INIT_VAL;
+                debounceTimer = TRIGGER_INIT_VAL;
             }
             break;
         
@@ -132,7 +126,7 @@ void trigger_tick(){
                 trigger_currentState = transmit_st; // returns
             }
             else{ //still low
-                if(debounceTimer < DEBOUNCE_TIMER_MAX) //still checking
+                if(debounceTimer < TRIGGER_DEBOUNCE_TIMER_MAX) //still checking
                     trigger_currentState = debounce_Release_st;  
                 else{ //passed debounce
                     trigger_currentState = wait_For_Trigger_st;
@@ -195,7 +189,7 @@ void trigger_runTest(){
 
 //returns input from trigger pins
 bool triggerPressed(){
-    return ( (!ignoreGunInput && (mio_readPin(MIO_TRIGGER_PIN) == TRIGGER_HIGH)) ||
+    return ( (!ignoreGunInput && (mio_readPin(TRIGGER_MIO_TRIGGER_PIN) == TRIGGER_HIGH)) ||
                 (buttons_read() & BUTTONS_BTN0_MASK) );
 }
 

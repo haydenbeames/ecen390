@@ -12,10 +12,6 @@ enum lockoutTimer_st_t{
 static enum lockoutTimer_st_t lockoutTimer_currentState;
 static enum lockoutTimer_st_t lockoutTimer_oldState;
 
-//Constants
-#define INIT_VAL 0
-#define RUNTEST_DELAY 0.01
-
 //Variables
 static uint16_t lockoutTimer;
 static bool run;
@@ -31,7 +27,7 @@ void lockoutTimer_start(){
 // Perform any necessary inits for the lockout timer.
 void lockoutTimer_init(){
     run = false;
-    lockoutTimer = INIT_VAL;
+    lockoutTimer = LOCKOUT_TIMER_INIT_VAL;
     lockoutTimer_currentState = init_st;
 }
 
@@ -62,7 +58,7 @@ void lockoutTimer_tick(){
                 lockoutTimer_currentState = count_st;
             else{ //1/2 sec timer done
                 run = false;
-                lockoutTimer = INIT_VAL;
+                lockoutTimer = LOCKOUT_TIMER_INIT_VAL;
                 lockoutTimer_currentState = wait_st;
             }
             break;

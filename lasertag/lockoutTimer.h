@@ -13,6 +13,10 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 
 #define LOCKOUT_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
 
+//Constants for file
+#define LOCKOUT_TIMER_INIT_VAL 0
+#define LOCKOUT_TIMER_RUNTEST_DELAY 0.01
+
 // Calling this starts the timer.
 void lockoutTimer_start();
 

@@ -12,6 +12,20 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 
 #define TRANSMITTER_OUTPUT_PIN 13     // JF1 (pg. 25 of ZYBO reference manual).
 #define TRANSMITTER_PULSE_WIDTH 20000 // Based on a system tick-rate of 100 kHz.
+#define TRANSMITTER_HIGH_VALUE 1
+#define TRANSMITTER_LOW_VALUE 0
+#define TRANSMITTER_TEST_TICK_PERIOD_IN_MS 10
+#define TRANSMITTER_BOUNCE_DELAY 5
+#define TRANSMITTER_DUTY_CYCLE_DIVISOR 2.0
+#define TRANSMITTER_DELAY_NON_CONTINUOUS 400
+
+#define TRANSMITTER_INIT_ST_MSG "init_st\n"
+#define TRANSMITTER_WAITING_FOR_ACTIVATION_ST_MSG "waiting_for_activation_st\n"
+#define TRANSMITTER_HIGH_ST_MSG "high_st\n"
+#define TRANSMITTER_LOW_ST_MSG "low_st\n"
+#define TRANSMITTER_CONTINUOUS TRUE
+#define TRANSMITTER_NON_CONTINUOUS FALSE
+
 #include <stdbool.h>
 #include <stdint.h>
 

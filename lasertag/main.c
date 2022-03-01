@@ -46,6 +46,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #include "detector.h"
 #include "utils.h"
 
+//main function
 int main() {
 
 #ifdef RUNNING_MODE_TESTS
@@ -69,20 +70,22 @@ int main() {
   printf("NONCONTINUOUS\n");
   transmitter_runNoncontinuousTest();
   utils_msDelay(DEBOUNCE_DELAY);
+  //check if BTN3 pressed
   while (!(buttons_read() & BUTTONS_BTN3_MASK));
   printf("CONTINUOUS\n");
   transmitter_runContinuousTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  
+  //check if BTN3 pressed
   while (!(buttons_read() & BUTTONS_BTN3_MASK));
   printf("TRIGGER TEST\n");
   trigger_runTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  
+  //check if BTN3 pressed
   while (!(buttons_read() & BUTTONS_BTN3_MASK));
   printf("LOCKOUT TIMER TEST\n");
   lockoutTimer_runTest();
   utils_msDelay(DEBOUNCE_DELAY);
+  //check if BTN3 pressed
   while (!(buttons_read() & BUTTONS_BTN3_MASK));
   printf("HITLED TEST\n");
   hitLedTimer_runTest();

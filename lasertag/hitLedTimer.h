@@ -19,6 +19,15 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #define HIT_LED_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
 #define HIT_LED_TIMER_OUTPUT_PIN 11      // JF-3
 
+//Constants
+#define HIT_LED_TIMER_INIT_VAL 0
+#define HIT_LED_TIMER_PIN_HIGH 1
+#define HIT_LED_TIMER_PIN_LOW 0
+#define HIT_LED_TIMER_LD0_ON 0x1
+#define HIT_LED_TIMER_LD0_OFF 0x0
+#define HIT_LED_TIMER_RUNTEST_DELAY 500
+#define HIT_LED_TIMER_MS_DELAY_TEN 1000
+
 // Calling this starts the timer.
 void hitLedTimer_start();
 
