@@ -112,7 +112,7 @@ void trigger_tick(){
 
                 else{ //timer done: debounced successfully
                     trigger_currentState = transmit_st;
-                    transmitter_run(); //starts transmitter
+                    //transmitter_run(); //starts transmitter - task three
                     shotCount--; //takes away one shot from shotCount
                 }
             }
