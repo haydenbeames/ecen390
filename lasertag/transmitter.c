@@ -80,7 +80,7 @@ void transmitter_set_jf1_to_one() {
 
 //set JF1 pin to LOW
 void transmitter_set_jf1_to_zero() {
-    mio_writePin(TRANSMITTER_OUTPUT_PIN, TRANSMITTER_LOW_VALUE); // Write a '1' to JF-1.
+    mio_writePin(TRANSMITTER_OUTPUT_PIN, TRANSMITTER_LOW_VALUE); // Write a '0' to JF-1.
 }
 void transmitter_run() {
     active = true;
@@ -107,34 +107,19 @@ void transmitter_setContinuousMode(bool continuousModeFlag) {
     continuous = continuousModeFlag;
 }
 void transmitter_runNoncontinuousTest() {
-    continuous = NON_CONTINUOUS;
-    printf("starting transmitter_runTest()\n");
-    mio_init(false);
-    buttons_init();                                         // Using buttons
-    switches_init();                                        // and switches.
-    transmitter_init();                                     // init the transmitter.
-    transmitter_enableTestMode();  
-    // Prints diagnostics to stdio.
-    while (!(buttons_read() & BUTTONS_BTN1_MASK)) {         // Run continuously until BTN1 is pressed.
-      uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
-      //printf("SW VAL:  %d\n", switchValue);
-      transmitter_setFrequencyNumber(switchValue);          // set the frequency number based upon switch value.
-      transmitter_run();        
-      // Start the transmitter.
-     // while (transmitter_running()) {  
-          
-        // printf("WHILE LOOP\n");             // Keep ticking until it is done.
-      //printf("%s\n", currentState);
-                            // tick.
-       
-      //}
-      printf("completed one test period.\n");\
+    transmitter_setContinuousMode(NON_CONTINUOUS);
+
+    while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
+      uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
+      transmitter_setFrequencyNumber(switchValue);
+      transmitter_run();
+
+      while (transmitter_running()) {  
+
+      }
       utils_msDelay(400);
     }
     transmitter_disableTestMode();
-    
-
-    printf("exiting transmitter_runTest()\n");
 }
 void transmitter_runContinuousTest() {    
     continuous = CONTINUOUS;
@@ -146,19 +131,17 @@ void transmitter_runTest() {
   switches_init();                                        // and switches.
   transmitter_init();                                     // init the transmitter.
   transmitter_enableTestMode();  
+
   // Prints diagnostics to stdio.
   while (!(buttons_read() & BUTTONS_BTN1_MASK)) {         // Run continuously until BTN1 is pressed.
     uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
-    //printf("SW VAL:  %d\n", switchValue);
     transmitter_setFrequencyNumber(switchValue);          // set the frequency number based upon switch value.
-    transmitter_run();        
+    transmitter_run();   
+
     // Start the transmitter.
     while (transmitter_running()) {  
       debugStatePrint();        
-       // printf("WHILE LOOP\n");             // Keep ticking until it is done.
-    //printf("%s\n", currentState);
-      transmitter_tick();                                 // tick.
-     // utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);  // short delay between ticks.
+      transmitter_tick();
     }
     printf("completed one test period.\n");
   }
@@ -168,69 +151,62 @@ void transmitter_runTest() {
 }
 
 void transmitter_tick() {  
-  // Perform state update first.
-  debugStatePrint();
+
+  //debugStatePrint();
   switch(currentState) {
     case init_st:
         currentState = waiting_for_activation_st;
         break;
       case waiting_for_activation_st:
-        
         //if active go to high state to start waveform
-        timeCountMax = transmitter_getFrequencyNumber() / 2.0;
+        timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
+        
         //high state if active and continuous
-        if ((active = true) && (continuous == NON_CONTINUOUS)) {
+        if ((active == true) && (continuous == NON_CONTINUOUS)) {
+            transmitter_set_jf1_to_one();
             currentState = high_st;
         }
         //go to high state if continuous
         if (continuous == CONTINUOUS) {
+            transmitter_set_jf1_to_one();
             currentState = high_st;
         }
         break;
       case high_st:
-        //turn JF1 pin on
-        printf("%d\n", timeCountMax);
-        if(!ledFirstPass) {
-            ledFirstPass = true;
-            transmitter_set_jf1_to_one();
-        }
-        //able to detect changes in frequency in continuous mode
         if (continuous == CONTINUOUS) {
-            timeCountMax = transmitter_getFrequencyNumber() / 2.0; 
+            timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
         }
         //check if time on is at max
-        if (timeCount >= timeCountMax) {
+        else if (timeCount >= timeCountMax) {
             timeCount = 0;
             ledFirstPass = false;
             currentState = low_st;
         }
-        else {     
+        else { 
+            transmitter_set_jf1_to_zero();    
             currentState = high_st;
         }
-        printf("             %d\n", msCount200);
+        //printf("             %d\n", msCount200);
         break;
       case low_st:
+        //printf("%d\n", timeCount);
         //turn JF1 pin off
         if(msCount200 >= TRANSMITTER_PULSE_WIDTH) {
-            firstPassWaveform = true;
+        
             active = false;
             transmitterRunningFlag = false;
             timeCount = 0;
             msCount200 = 0;
-            printf("COMPLETE CYCLE");
+            //printf("COMPLETE CYCLE");
             currentState = waiting_for_activation_st;
         }
-        if(!ledFirstPass) {
-            ledFirstPass = true;
-            transmitter_set_jf1_to_zero();
-        }
         //check if time off is at max
-        if ((timeCount >= timeCountMax) && (msCount200 < TRANSMITTER_PULSE_WIDTH)) {
+        else if ((timeCount >= timeCountMax) && (msCount200 < TRANSMITTER_PULSE_WIDTH)) {
+            ledFirstPass = false;
             timeCount = 0;
+            transmitter_set_jf1_to_one();
             currentState = high_st;
         }
-        
-       
         break;
     default:
       // print an error message here.
@@ -245,12 +221,12 @@ void transmitter_tick() {
         ledFirstPass = false;
         break;
       case high_st:
-        ++timeCount;
-        ++msCount200;
+        timeCount = timeCount + 1;
+        msCount200 = msCount200 + 1;
         break;
       case low_st:
-        ++timeCount;
-        ++msCount200;
+        timeCount = timeCount + 1;
+        msCount200 = msCount200 + 1;
         break;
      default:
       // print an error message here.
