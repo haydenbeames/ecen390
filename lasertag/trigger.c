@@ -8,8 +8,6 @@
 // trigger. Ultimately, it will activate the transmitter when a debounced press
 // is detected.
 
-//typedef uint16_t trigger_shotsRemaining_t;
-
 //StateMachine States
 enum trigger_st_t{
     init_st,                //start state
@@ -244,14 +242,12 @@ void triggerprintState(bool runTest){
                 break;
             
             case wait_For_Trigger_st:   //WAIT FOR TRIGGER
-                //printf("U\n");
                 break;
             
             case debounce_Trigger_st:   //DEBOUNCE TRIGGER
                 break;
             
             case transmit_st:           //TRANSMIT
-                //printf("D\n");
                 break;
             
             case debounce_Release_st:   //DEBOUNCE RELEASE

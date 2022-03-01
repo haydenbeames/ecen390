@@ -11,11 +11,6 @@
 // It is used to lock-out the detector once a hit has been detected.
 // This ensure that only one hit is detected per 1/2-second interval.
 
-/*
-#define HIT_LED_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
-#define HIT_LED_TIMER_OUTPUT_PIN 11      // JF-3
-*/
-
 //StateMachine States
 enum hitLedTimer_st_t{
     init_st,                //start state
@@ -33,6 +28,7 @@ static enum hitLedTimer_st_t hitLedTimer_oldState;
 #define LD0_ON 0x1
 #define LD0_OFF 0x0
 #define RUNTEST_DELAY 500
+#define MS_DELAY_TEN 1000
 
 //Variables
 static uint16_t lightTimer;
@@ -55,7 +51,6 @@ bool hitLedTimer_running(){
 // Standard tick function.
 void hitLedTimer_tick(){
     hitLedTimer_oldState = hitLedTimer_currentState; //saves state for debugging
-
     //Transitions
     switch(hitLedTimer_currentState){
         case init_st:               //INIT
@@ -98,10 +93,6 @@ void hitLedTimer_tick(){
             break;
     }
 
-    //debug function if transition occurred
-    //if(hitLedTimer_currentState != hitLedTimer_oldState)
-        //printState();
-    
     //State Actions
     switch(hitLedTimer_currentState){
         case init_st:               //INIT
@@ -165,8 +156,8 @@ void hitLedTimer_runTest(){
     hitLedTimer_init();
     hitLedTimer_enable();
 
-    utils_msDelay(1000);
-
+    utils_msDelay(MS_DELAY_TEN);
+    //while not button 1
     while(!(buttons_read() & BUTTONS_BTN1_MASK)){ //loop until stopped
         hitLedTimer_start(); //start hit indicator
         while(hitLedTimer_running()){ //waits until done
@@ -178,6 +169,7 @@ void hitLedTimer_runTest(){
 
 //Helper Functions
 void printState(){
+    //debug sm
     switch(hitLedTimer_currentState){
         case init_st:               //INIT
             printf("Init\n");

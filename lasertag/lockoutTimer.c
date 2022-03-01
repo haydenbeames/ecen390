@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include "utils.h"
 
-//#define LOCKOUT_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
-
 //StateMachine States
 enum lockoutTimer_st_t{
     init_st,    //start state
@@ -17,7 +15,6 @@ static enum lockoutTimer_st_t lockoutTimer_oldState;
 //Constants
 #define INIT_VAL 0
 #define RUNTEST_DELAY 0.01
-
 
 //Variables
 static uint16_t lockoutTimer;
@@ -75,10 +72,6 @@ void lockoutTimer_tick(){
             break;
     }
 
-    //debug function if transition occurred
-    //if(lockoutTimer_currentState != lockoutTimer_oldState)
-        //lockoutprintState();
-
     //State Actions
     switch(lockoutTimer_currentState){
         case init_st:       //INIT
@@ -124,14 +117,12 @@ void lockoutprintState(){ //prints current state
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
 bool lockoutTimer_runTest(){
-    //printf("Lockout Timer Run Test\n");
     lockoutTimer_init();
     intervalTimer_init(INTERVAL_TIMER_TIMER_1); //using Timer 1
     intervalTimer_start(INTERVAL_TIMER_TIMER_1); //start
-    
     //Run Lockout Timer
     lockoutTimer_start();
-
+    //while timer running
     while(lockoutTimer_running()){
         utils_msDelay(1);
     } //runs state machine until finished
