@@ -23,6 +23,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 // Leave this line uncommented unless you want to run some other special test
 // main().
 #define LASER_TAG_MAIN
+#define DEBOUNCE_DELAY 1000
 
 #ifdef LASER_TAG_MAIN
 
@@ -43,6 +44,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #include "transmitter.h"
 #include "trigger.h"
 #include "detector.h"
+#include "utils.h"
 
 int main() {
 
@@ -64,9 +66,10 @@ int main() {
   interrupts_startArmPrivateTimer();  // start the main timer.
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
-  //transmitter_runContinuousTest();
-  
+  //printf("MADE IT 1\n");
   transmitter_runNoncontinuousTest();
+
+  //transmitter_runContinuousTest();
   //trigger_runTest();
   //hitLedTimer_runTest();
   //lockoutTimer_runTest();
