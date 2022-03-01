@@ -97,7 +97,6 @@ void lockoutTimer_tick(){
 }
 
 //Helper Functions
-
 void lockoutprintState(){ //prints current state
     switch(lockoutTimer_currentState){ //print for each state
         case init_st:       //INIT

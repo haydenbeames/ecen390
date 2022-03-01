@@ -66,12 +66,25 @@ int main() {
   interrupts_startArmPrivateTimer();  // start the main timer.
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
+  printf("NONCONTINUOUS\n");
+  transmitter_runNoncontinuousTest();
+  utils_msDelay(1000);
+  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  printf("CONTINUOUS\n");
+  transmitter_runContinuousTest();
+  utils_msDelay(1000);
   
-  //transmitter_runNoncontinuousTest();
-
-  //transmitter_runContinuousTest();
+  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  printf("TRIGGER TEST\n");
   trigger_runTest();
+  utils_msDelay(1000);
+  
+  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  printf("LOCKOUT TIMER TEST\n");
   lockoutTimer_runTest();
+  utils_msDelay(1000);
+  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  printf("HITLED TEST\n");
   hitLedTimer_runTest();
   //while (1) ; // Forever-while loop. Modify as you see fit.
 #endif
