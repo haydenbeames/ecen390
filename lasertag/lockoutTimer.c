@@ -1,6 +1,7 @@
 #include "lockoutTimer.h"
 #include "intervalTimer.h"
 #include <stdio.h>
+#include "utils.h"
 
 //#define LOCKOUT_TIMER_EXPIRE_VALUE 50000 // Defined in terms of 100 kHz ticks.
 
@@ -45,7 +46,7 @@ bool lockoutTimer_running(){
 // Standard tick function.
 void lockoutTimer_tick(){
     lockoutTimer_oldState = lockoutTimer_currentState; //saves state for transition
-
+    //lockoutprintState();
     //Transitions
     switch(lockoutTimer_currentState){
         case init_st:       //INIT
@@ -65,6 +66,7 @@ void lockoutTimer_tick(){
             else{ //1/2 sec timer done
                 run = false;
                 lockoutTimer = INIT_VAL;
+                lockoutTimer_currentState = wait_st;
             }
             break;
         
@@ -74,8 +76,8 @@ void lockoutTimer_tick(){
     }
 
     //debug function if transition occurred
-    if(lockoutTimer_currentState != lockoutTimer_oldState)
-        lockoutprintState();
+    //if(lockoutTimer_currentState != lockoutTimer_oldState)
+        //lockoutprintState();
 
     //State Actions
     switch(lockoutTimer_currentState){
@@ -123,18 +125,19 @@ void lockoutprintState(){ //prints current state
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
 bool lockoutTimer_runTest(){
-    printf("Lockout Timer Run Test\n");
+    //printf("Lockout Timer Run Test\n");
     lockoutTimer_init();
     intervalTimer_init(INTERVAL_TIMER_TIMER_1); //using Timer 1
     intervalTimer_start(INTERVAL_TIMER_TIMER_1); //start
     
     //Run Lockout Timer
     lockoutTimer_start();
-    while(lockoutTimer_running()){ //runs state machine until finished
-        lockoutTimer_tick();
-        utils_msDelay(RUNTEST_DELAY); //100,000 Hz rate
-    }
 
+    while(lockoutTimer_running()){
+        utils_msDelay(1);
+    } //runs state machine until finished
+
+    printf("FINISHED\n");
     intervalTimer_stop(INTERVAL_TIMER_TIMER_1); //stop timer
-    printf("Lockout Timer: %f", intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1)); //prints output
+    printf("Lockout Timer: %f\n", intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1)); //prints output
 }

@@ -24,7 +24,7 @@ static enum trigger_st_t trigger_oldState;
 
 //State Machine Constants
 #define INIT_VAL 0
-#define DEBOUNCE_TIMER_MAX 5000
+#define DEBOUNCE_TIMER_MAX 15000
 #define MIO_TRIGGER_PIN 10
 #define TRIGGER_HIGH 1
 

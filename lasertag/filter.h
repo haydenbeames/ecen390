@@ -28,7 +28,7 @@ static const uint16_t filter_frequencyTickTable[FILTER_FREQUENCY_COUNT] = {
     68, 58, 50, 44, 38, 34, 30, 28, 26, 24};
 
 // Filtering routines for the laser-tag project.
-// Filtering is performed by a two-stage filter, as described below.
+// Filtering is performedby  a two-stage filter, as described below.
 
 // 1. First filter is a decimating FIR filter with a configurable number of taps
 // and decimation factor.

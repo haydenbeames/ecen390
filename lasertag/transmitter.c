@@ -108,7 +108,7 @@ void transmitter_setContinuousMode(bool continuousModeFlag) {
 }
 void transmitter_runNoncontinuousTest() {
     transmitter_setContinuousMode(NON_CONTINUOUS);
-
+    //do nonContinuous test while not button pressed
     while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
       uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
       transmitter_setFrequencyNumber(switchValue);
@@ -121,8 +121,16 @@ void transmitter_runNoncontinuousTest() {
     }
     transmitter_disableTestMode();
 }
-void transmitter_runContinuousTest() {    
-    continuous = CONTINUOUS;
+void transmitter_runContinuousTest() {  
+  uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
+      transmitter_setFrequencyNumber(switchValue);  
+    transmitter_setContinuousMode(CONTINUOUS);
+     
+    //do nonContinuous test while not button pressed
+    while (!(buttons_read() & BUTTONS_BTN1_MASK)) { 
+      uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;
+      transmitter_setFrequencyNumber(switchValue);
+    }
 }
 void transmitter_runTest() {
   printf("starting transmitter_runTest()\n");
@@ -160,30 +168,35 @@ void transmitter_tick() {
       case waiting_for_activation_st:
         //if active go to high state to start waveform
         timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
-        
+
         //high state if active and continuous
         if ((active == true) && (continuous == NON_CONTINUOUS)) {
             transmitter_set_jf1_to_one();
             currentState = high_st;
         }
         //go to high state if continuous
-        if (continuous == CONTINUOUS) {
+        else if (continuous == CONTINUOUS) {
             transmitter_set_jf1_to_one();
             currentState = high_st;
         }
         break;
       case high_st:
-        if (continuous == CONTINUOUS) {
-            timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
-        }
+      //printf("           %d\n", timeCount);
+      //printf("%d\n", timeCountMax);
+        
         //check if time on is at max
-        else if (timeCount >= timeCountMax) {
+        if (timeCount >= timeCountMax) {
+         
             timeCount = 0;
-            ledFirstPass = false;
+            transmitter_set_jf1_to_zero();    
             currentState = low_st;
         }
+        else if (continuous == CONTINUOUS) {
+          
+            timeCountMax = (transmitter_getFrequencyNumber() / 2.0);
+        }
         else { 
-            transmitter_set_jf1_to_zero();    
+             
             currentState = high_st;
         }
         //printf("             %d\n", msCount200);
@@ -202,7 +215,6 @@ void transmitter_tick() {
         }
         //check if time off is at max
         else if ((timeCount >= timeCountMax) && (msCount200 < TRANSMITTER_PULSE_WIDTH)) {
-            ledFirstPass = false;
             timeCount = 0;
             transmitter_set_jf1_to_one();
             currentState = high_st;

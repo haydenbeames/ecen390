@@ -19,25 +19,18 @@ typedef uint32_t
 
 // Performs inits for anything in isr.c
 void isr_init() {
-    //trigger_init();
-    //lockoutTimer_init();
+    trigger_init();
+    lockoutTimer_init();
     transmitter_init();
-    //hitLedTimer_init();
+    hitLedTimer_init();
 }
 
 // This function is invoked by the timer interrupt at 100 kHz.
 void isr_function(){ //Task 2
-    //trigger_tick();  
-    //ticks for all SM's
-    //uint16_t switchValue = switches_read() % FILTER_FREQUENCY_COUNT;  // Compute a safe number from the switches.
-    //printf("SW VAL:  %d\n", switchValue);
-
-    //transmitter_setFrequencyNumber(switchValue);
+    trigger_tick();  
     transmitter_tick();
-    
-    
-    //hitLedTimer_tick();
-    //lockoutTimer_tick();
+    hitLedTimer_tick();
+    lockoutTimer_tick();
 }
 
 // This adds data to the ADC queue. Data are removed from this queue and used by

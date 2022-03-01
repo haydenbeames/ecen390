@@ -66,14 +66,14 @@ int main() {
   interrupts_startArmPrivateTimer();  // start the main timer.
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
-  //printf("MADE IT 1\n");
-  transmitter_runNoncontinuousTest();
+  
+  //transmitter_runNoncontinuousTest();
 
   //transmitter_runContinuousTest();
-  //trigger_runTest();
-  //hitLedTimer_runTest();
-  //lockoutTimer_runTest();
-  while (1) ; // Forever-while loop. Modify as you see fit.
+  trigger_runTest();
+  lockoutTimer_runTest();
+  hitLedTimer_runTest();
+  //while (1) ; // Forever-while loop. Modify as you see fit.
 #endif
 
 #ifdef RUNNING_MODE_M3_T3
