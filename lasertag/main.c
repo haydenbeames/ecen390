@@ -11,7 +11,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 //#define RUNNING_MODE_TESTS
 
 // Uncomment to run Milestone 3, Task 2
- #define RUNNING_MODE_M3_T2
+#define RUNNING_MODE_M3_T2
 
 // Uncomment to run continuous/shooter mode, Milestone 3, Task 3
 // #define RUNNING_MODE_M3_T3
@@ -43,14 +43,13 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #include "switches.h"
 #include "transmitter.h"
 #include "trigger.h"
-#include "detector.h"
 #include "utils.h"
 
-//main function
+// main function
 int main() {
 
 #ifdef RUNNING_MODE_TESTS
-  //queue_runTest(); // M1
+  // queue_runTest(); // M1
   // filterTest_runTest(); // M3 T1
   // transmitter_runTest(); // M3 T2
   // detector_runTest(); // M3 T3
@@ -70,23 +69,27 @@ int main() {
   printf("NONCONTINUOUS\n");
   transmitter_runNoncontinuousTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  //check if BTN3 pressed
-  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  // check if BTN3 pressed
+  while (!(buttons_read() & BUTTONS_BTN3_MASK))
+    ;
   printf("CONTINUOUS\n");
   transmitter_runContinuousTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  //check if BTN3 pressed
-  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  // check if BTN3 pressed
+  while (!(buttons_read() & BUTTONS_BTN3_MASK))
+    ;
   printf("TRIGGER TEST\n");
   trigger_runTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  //check if BTN3 pressed
-  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  // check if BTN3 pressed
+  while (!(buttons_read() & BUTTONS_BTN3_MASK))
+    ;
   printf("LOCKOUT TIMER TEST\n");
   lockoutTimer_runTest();
   utils_msDelay(DEBOUNCE_DELAY);
-  //check if BTN3 pressed
-  while (!(buttons_read() & BUTTONS_BTN3_MASK));
+  // check if BTN3 pressed
+  while (!(buttons_read() & BUTTONS_BTN3_MASK))
+    ;
   printf("HITLED TEST\n");
   hitLedTimer_runTest();
 #endif
@@ -95,7 +98,8 @@ int main() {
   // The program comes up in continuous mode.
   // Hold BTN2 while the program starts to come up in shooter mode.
   buttons_init(); // Init the buttons.
-  if (buttons_read() & BUTTONS_BTN2_MASK) { // Read the buttons to see if BTN2 is depressed.
+  if (buttons_read() &
+      BUTTONS_BTN2_MASK) { // Read the buttons to see if BTN2 is depressed.
     printf("Starting shooter mode\n");
     runningModes_shooter(); // Run shooter mode if BTN2 is depressed.
   } else {

@@ -12,7 +12,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 
 #include <stdint.h>
 
-//State Machine Constants
+// State Machine Constants
 #define TRIGGER_INIT_VAL 0
 #define TRIGGER_DEBOUNCE_TIMER_MAX 15000
 #define TRIGGER_MIO_TRIGGER_PIN 10
