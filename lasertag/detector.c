@@ -24,7 +24,8 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #define INIT_VAL 0
 #define ADC_SCALAR 2047.5
 #define ADC_RANGE_ADJUST -1
-#define fudgeFactor
+#define FUDGE_FACTOR 1000
+#define MEDIAN_INDEX 4
 
 static bool hitDetected;
 static bool ignoreAllHits;
@@ -33,6 +34,7 @@ static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT];
 static uint32_t fudgeFactorIndex;
 static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
 static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
+static uint32_t thresholdPowerValue;
 
 #define IGNORED_FREQUENCY_SIZE
 static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
@@ -92,11 +94,19 @@ void detector(bool interruptsCurrentlyEnabled){
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-                detector_sort(maxFreq, filter_getCurrentPowerValues, sortedPowerValues);
-
-                //set hitDetected high and select maxFreq
+                detector_sort(maxFreq, filter_getCurrentPowerValues, sortedPowerValues); //sorts array
+                thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
                 
-                if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignored frequency
+                //loop starts at highest power, if above threshold and not ignored, then becomes hit
+                uint8_t index = FILTER_FREQUENCY_COUNT - 1;
+                while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
+                    if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
+                        hitDetected = true; //sets flag high
+                        maxFreq = sortedIndexArray[index]; //saves index of hit
+                    }
+                }
+
+                if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignoring all frequency
                     lockoutTimer_start();
                     hitLedTimer_start();
                     detector_hitArray[maxFreq] += 1; //increases hitCount for the max Freq
@@ -156,7 +166,7 @@ void detector_setFudgeFactorIndex(uint32_t index){
 // contains the sorted values. Note: it is assumed that the size of both of the
 // array arguments is 10.
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){
-    
+
 }
 
 // Encapsulate ADC scaling for easier testing.
