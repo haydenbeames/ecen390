@@ -37,7 +37,7 @@ static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
     hitDetected = false; //sets flags and arrays to zero
-    ignoreAllHiys = false;
+    ignoreAllHits = false;
     detector_hitArray = {INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL};
     filter_init();
     adcBufferInit();
