@@ -97,7 +97,7 @@ void trigger_tick() {
       else { // timer done: debounced successfully
         trigger_currentState = transmit_st;
         printf("D\n");
-        // transmitter_run(); //starts transmitter - task three
+        transmitter_run(); //starts transmitter - task three
         shotCount--; // takes away one shot from shotCount
       }
     } else // bounced, not settled yet

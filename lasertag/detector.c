@@ -156,7 +156,20 @@ void detector_setFudgeFactorIndex(uint32_t index){
 // contains the sorted values. Note: it is assumed that the size of both of the
 // array arguments is 10.
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){
-    
+    uint16_t i = 0;
+    uint16_t j = 0;
+    uint16_t temp = 0;
+    while (i < 10) {
+        j=i;
+        while((j > 0) && (unsortedValues[j-1] < unsortedValues[j])) {
+            temp = unsortedValues[j-1];
+            unsortedValues[j-1] = unsortedValues[j];
+            unsortedValues[j] = temp;
+            --j;
+        }
+        ++i;
+
+    }
 }
 
 // Encapsulate ADC scaling for easier testing.
