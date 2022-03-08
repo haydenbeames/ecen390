@@ -9,7 +9,7 @@ add_executable(lasertag.elf
  transmitter.c
  hitLedTimer.c
  lockoutTimer.c
-# detector.c
+ detector.c
 # sound.c
 # timer_ps.c
 # runningModes.c

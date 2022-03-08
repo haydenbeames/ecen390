@@ -18,6 +18,8 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #include "filter.h"
 #include"lockoutTimer.h"
 #include "hitLedTimer.h"
+#include "isr.c"
+#include "detector.h"
 
 
 //Constants
@@ -29,27 +31,27 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 
 static bool hitDetected;
 static bool ignoreAllHits;
-static uint16_t maxFreq;
+static uint32_t maxFreq;
 static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT];
 static uint32_t fudgeFactorIndex;
 static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
 static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
 static uint32_t thresholdPowerValue;
+static double unsortedPowerArray[FILTER_FREQUENCY_COUNT];
 
-#define IGNORED_FREQUENCY_SIZE
-static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
+static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
 // Always have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
     hitDetected = false; //sets flags and arrays to zero
     ignoreAllHits = false;
-    detector_hitArray = {INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL};
-    filter_init();
-    adcBufferInit();
-    for(uint8_t i = 0; i < IGNORED_FREQUENCY_SIZE; i++) {
-        ignoredFreq[i] = ignoredFrequencies[i];
+    for(uint8_t j = 0; j < FILTER_FREQUENCY_COUNT; j++) {
+        detector_hitArray[j] = INIT_VAL;
+        unsortedPowerArray[j] = INIT_VAL;
+        ignoredFreq[j] = ignoredFrequencies[j];
     }
+    filter_init();
 }
 
 // Runs the entire detector: decimating fir-filter, iir-filters,
@@ -63,25 +65,25 @@ void detector_init(bool ignoredFrequencies[]){
 // if ignoreSelf == true, ignore hits that are detected on your frequency.
 // Your frequency is simply the frequency indicated by the slide switches
 void detector(bool interruptsCurrentlyEnabled){
-    uint32_t elementCount = isr_adcBufferElemntCount();
+    uint32_t elementCount = isr_adcBufferElementCount();
     uint32_t rawAdcValue = INIT_VAL;
     double scaledAdcValue = INIT_VAL;
     uint8_t runCount = INIT_VAL;
-    for(uint32_t i = INIT_VAL; i < elemntCount; i++){ //repeats for all elements
+    for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
         
-        rawAdcBuffer = isr_removeDataFromAdcBuffer(); //pop value
+        rawAdcValue = isr_removeDataFromAdcBuffer(); //pop value
         if(interruptsCurrentlyEnabled) //reinstates interrupts if going before
             interrupts_enableArmInts();
         
         //scale the adc value from -1 to 1 from 0-4095
-        scaledAdcValue = detector_getScaledAdcValue(rawAdcBuffer);
+        scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
         filter_addNewInput(scaledAdcValue); //adds to filter process
         runCount++; //increment for another value added
         
         //reached decimation value, runs all filters and power
-        if(runCount == FILTER_FIR_DECIMATION_VALUE){ 
+        if(runCount == FILTER_FIR_DECIMATION_FACTOR){ 
             runCount = INIT_VAL; //resets for next set of 10
 
             filter_firFilter(); //FIR filter
@@ -94,7 +96,8 @@ void detector(bool interruptsCurrentlyEnabled){
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-                detector_sort(maxFreq, filter_getCurrentPowerValues, sortedPowerValues); //sorts array
+                filter_getCurrentPowerValues(unsortedPowerArray);
+                detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
                 
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
@@ -183,7 +186,7 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
 
 // Encapsulate ADC scaling for easier testing.
 double detector_getScaledAdcValue(isr_AdcValue_t adcValue){
-    return (double(adcValue) / ADC_SCALAR) + ADC_RANGE_ADJUST; //divide by half range, minus 1
+    return ((double)adcValue / ADC_SCALAR) + ADC_RANGE_ADJUST; //divide by half range, minus 1
 }
 
 /*******************************************************
