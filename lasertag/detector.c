@@ -15,9 +15,17 @@ typedef uint16_t detector_hitCount_t;
 
 typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, double[], double[], bool);*/
 
+#include "filter.h"
+#include"lockoutTimer.h"
+#include "hitLedTimer.h"
+
+
 //Constants
 #define INIT_VAL 0
+#define ADC_SCALAR 2047.5
+#define ADC_RANGE_ADJUST -1
 
+static bool hitDetected;
 
 // Always have to init things.
 // bool array is indexed by frequency number, array location set for true to
@@ -39,23 +47,51 @@ void detector_init(bool ignoredFrequencies[]){
 void detector(bool interruptsCurrentlyEnabled){
     uint32_t elementCount = isr_adcBufferElemntCount();
     uint32_t rawAdcValue = INIT_VAL;
-    bool interruptsEnabled = false;
     double scaledAdcValue = INIT_VAL;
+    uint8_t runCount = INIT_VAL;
     for(uint32_t i = INIT_VAL; i < elemntCount; i++){ //repeats for all elements
-        if(interruptsEnabled) //disables interrupts to safely manipulate adcBuffer
+        if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
         
         rawAdcBuffer = isr_removeDataFromAdcBuffer(); //pop value
-        if(interruptsEnabled) //reinstates interrupts if going before
+        if(interruptsCurrentlyEnabled) //reinstates interrupts if going before
             interrupts_enableArmInts();
         
-        scaledAdcValue;
+        //scale the adc value from -1 to 1 from 0-4095
+        scaledAdcValue = detector_getScaledAdcValue(rawAdcBuffer);
+        filter_addNewInput(scaledAdcValue); //adds to filter process
+        runCount++; //increment for another value added
+        
+        //reached decimation value, runs all filters and power
+        if(runCount == FILTER_FIR_DECIMATION_VALUE){ 
+            runCount = INIT_VAL; //resets for next set of 10
+
+            filter_firFilter(); //FIR filter
+            //runs all IIR Filters and Power computations
+            for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
+                filter_iirFilter(filterNum); //IIR
+                filter_computePower(filterNum, false, false); //power without force compute or debug
+            }
+
+            //Run hit detection
+            if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
+                //hit-detection algorithm
+                
+                
+                if(hitDetected){ //hitDetected and not an ignored frequency
+                    lockoutTimer_start();
+                    hitLedTimer_start();
+                    
+                }
+
+            }
+        }
     }
 }
 
 // Returns true if a hit was detected.
 bool detector_hitDetected(){
-
+    return hitDetected;
 }
 
 // Returns the frequency number that caused the hit.
@@ -104,7 +140,7 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
 
 // Encapsulate ADC scaling for easier testing.
 double detector_getScaledAdcValue(isr_AdcValue_t adcValue){
-
+    return (double(adcValue) / ADC_SCALAR) + ADC_RANGE_ADJUST; //divide by half range, minus 1
 }
 
 /*******************************************************
