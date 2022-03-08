@@ -17,13 +17,17 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 
 //Constants
 #define INIT_VAL 0
-
-
+#define IGNORED_FREQUENCY_SIZE
+static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
 // Always have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
-
+    filter_init();
+    adcBufferInit();
+    for(uint8_t i = 0; i < IGNORED_FREQUENCY_SIZE; i++) {
+        ignoredFreq[i] = ignoredFrequencies[i];
+    }
 }
 
 // Runs the entire detector: decimating fir-filter, iir-filters,
@@ -48,19 +52,18 @@ void detector(bool interruptsCurrentlyEnabled){
         rawAdcBuffer = isr_removeDataFromAdcBuffer(); //pop value
         if(interruptsEnabled) //reinstates interrupts if going before
             interrupts_enableArmInts();
-        
         scaledAdcValue;
     }
 }
 
 // Returns true if a hit was detected.
 bool detector_hitDetected(){
-
+    return interruptsCurrentlyEnabled;
 }
 
 // Returns the frequency number that caused the hit.
 uint16_t detector_getFrequencyNumberOfLastHit(){
-
+    return 
 }
 
 // Clear the detected hit once you have accounted for it.
