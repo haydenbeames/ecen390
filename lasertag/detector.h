@@ -71,7 +71,7 @@ void detector_getHitCounts(detector_hitCount_t hitArray[]);
 
 // Allows the fudge-factor index to be set externally from the detector.
 // The actual values for fudge-factors is stored in an array found in detector.c
-void detector_setFudgeFactorIndex(uint32_t);
+void detector_setFudgeFactorIndex(uint32_t index);
 
 // This function sorts the inputs in the unsortedArray and
 // copies the sorted results into the sortedArray. It also

@@ -24,11 +24,15 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #define INIT_VAL 0
 #define ADC_SCALAR 2047.5
 #define ADC_RANGE_ADJUST -1
+#define fudgeFactor
 
 static bool hitDetected;
 static bool ignoreAllHits;
-static uint8_t maxFreq;
-static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT]
+static uint16_t maxFreq;
+static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT];
+static uint32_t fudgeFactorIndex;
+static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
+static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
 
 #define IGNORED_FREQUENCY_SIZE
 static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
@@ -88,7 +92,7 @@ void detector(bool interruptsCurrentlyEnabled){
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-
+                detector_sort(maxFreq, filter_getCurrentPowerValues, sortedPowerValues);
 
                 //set hitDetected high and select maxFreq
                 
@@ -137,8 +141,8 @@ void detector_getHitCounts(detector_hitCount_t hitArray[]){
 
 // Allows the fudge-factor index to be set externally from the detector.
 // The actual values for fudge-factors is stored in an array found in detector.c
-void detector_setFudgeFactorIndex(uint32_t){
-
+void detector_setFudgeFactorIndex(uint32_t index){
+    fudgeFactorIndex = index;
 }
 
 // This function sorts the inputs in the unsortedArray and
@@ -152,7 +156,7 @@ void detector_setFudgeFactorIndex(uint32_t){
 // contains the sorted values. Note: it is assumed that the size of both of the
 // array arguments is 10.
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){
-
+    
 }
 
 // Encapsulate ADC scaling for easier testing.
