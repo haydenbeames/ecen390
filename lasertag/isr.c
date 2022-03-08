@@ -56,7 +56,8 @@ void isr_init() {
 
 // This function is invoked by the timer interrupt at 100 kHz.
 void isr_function(){ //Task 2
-    trigger_tick();  
+    isr_addDatatoAdcBuffer(interrupts_getAdcData()); //adds ADC data to buffer
+    trigger_tick();   //ticks begin
     transmitter_tick();
     hitLedTimer_tick();
     lockoutTimer_tick();
