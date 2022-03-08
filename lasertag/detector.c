@@ -22,20 +22,23 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 
 //Constants
 #define INIT_VAL 0
-<<<<<<< HEAD
 #define ADC_SCALAR 2047.5
 #define ADC_RANGE_ADJUST -1
 
 static bool hitDetected;
+static bool ignoreAllHits;
+static uint8_t maxFreq;
+static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT]
 
-=======
 #define IGNORED_FREQUENCY_SIZE
 static uint16_t ignoredFreq[IGNORED_FREQUENCY_SIZE];
->>>>>>> 1ca0009eb45a8c2b4ab0f531ccb508afc953e5bf
 // Always have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
+    hitDetected = false; //sets flags and arrays to zero
+    ignoreAllHiys = false;
+    detector_hitArray = {INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL, INIT_VAL};
     filter_init();
     adcBufferInit();
     for(uint8_t i = 0; i < IGNORED_FREQUENCY_SIZE; i++) {
@@ -65,7 +68,6 @@ void detector(bool interruptsCurrentlyEnabled){
         rawAdcBuffer = isr_removeDataFromAdcBuffer(); //pop value
         if(interruptsCurrentlyEnabled) //reinstates interrupts if going before
             interrupts_enableArmInts();
-<<<<<<< HEAD
         
         //scale the adc value from -1 to 1 from 0-4095
         scaledAdcValue = detector_getScaledAdcValue(rawAdcBuffer);
@@ -86,53 +88,51 @@ void detector(bool interruptsCurrentlyEnabled){
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
+
+
+                //set hitDetected high and select maxFreq
                 
-                
-                if(hitDetected){ //hitDetected and not an ignored frequency
+                if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignored frequency
                     lockoutTimer_start();
                     hitLedTimer_start();
-                    
+                    detector_hitArray[maxFreq] += 1; //increases hitCount for the max Freq
                 }
 
             }
         }
-=======
-        scaledAdcValue;
->>>>>>> 1ca0009eb45a8c2b4ab0f531ccb508afc953e5bf
     }
 }
 
 // Returns true if a hit was detected.
 bool detector_hitDetected(){
-<<<<<<< HEAD
     return hitDetected;
-=======
-    return interruptsCurrentlyEnabled;
->>>>>>> 1ca0009eb45a8c2b4ab0f531ccb508afc953e5bf
 }
 
 // Returns the frequency number that caused the hit.
 uint16_t detector_getFrequencyNumberOfLastHit(){
-    return 
+    return maxFreq;
 }
 
 // Clear the detected hit once you have accounted for it.
 void detector_clearHit(){
-
+    hitDetected = false; //lowers flag
 }
 
 // Ignore all hits. Used to provide some limited invincibility in some game
 // modes. The detector will ignore all hits if the flag is true, otherwise will
 // respond to hits normally.
 void detector_ignoreAllHits(bool flagValue){
-
+    ignoreAllHits = flagValue;
 }
 
 // Get the current hit counts.
 // Copy the current hit counts into the user-provided hitArray
 // using a for-loop.
 void detector_getHitCounts(detector_hitCount_t hitArray[]){
-
+    //copies all values from detector_hitArray to passed in hitArray
+    for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
+        hitArray[filterNum] = detector_hitArray[filterNum];
+    }
 }
 
 // Allows the fudge-factor index to be set externally from the detector.
