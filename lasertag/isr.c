@@ -65,16 +65,20 @@ void isr_function(){ //Task 2
 // This adds data to the ADC queue. Data are removed from this queue and used by
 // the detector.
 void isr_addDataToAdcBuffer(uint32_t adcData){
-
+    
 }
 
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer(){
+    uint32_t currentIndex = adcBuffer.indexOut;
+    uint32_t newIndex = incrementIndex(currentIndex);
+    return adc.BufferData[newIndex]
 
 }
 
 // This returns the number of values in the ADC buffer.
 uint32_t isr_adcBufferElementCount(){
+    
 
 }
 
