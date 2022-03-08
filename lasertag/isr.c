@@ -34,6 +34,7 @@ typedef struct {
 
 // This is the instantiation of adcBuffer.
 volatile static adcBuffer_t adcBuffer;
+uint32_t incrementIndex(uint32_t currIndex);
 
 // Init adcBuffer.
 void adcBufferInit() {
@@ -56,7 +57,7 @@ void isr_init() {
 
 // This function is invoked by the timer interrupt at 100 kHz.
 void isr_function(){ //Task 2
-    isr_addDatatoAdcBuffer(interrupts_getAdcData()); //adds ADC data to buffer
+    isr_addDataToAdcBuffer(interrupts_getAdcData()); //adds ADC data to buffer
     trigger_tick();   //ticks begin
     transmitter_tick();
     hitLedTimer_tick();
@@ -70,20 +71,22 @@ void isr_addDataToAdcBuffer(uint32_t adcData){
         adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
 
      //buffer not full yet or indexOut already adjusted
-    adcBuffer.data[indexIn] = adcData; //saves new data and moves index up
-    adcBuffer.indexIn = incrementIndex;
+    adcBuffer.data[adcBuffer.indexIn] = adcData; //saves new data and moves index up
+    adcBuffer.indexIn = incrementIndex(adcBuffer.indexIn);
     
 }
 
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer(){
-
+    uint32_t currentIndex = adcBuffer.indexOut;
+   uint32_t newIndex = incrementIndex(currentIndex);
+   return adcBuffer.data[newIndex];
 }
 
 // This returns the number of values in the ADC buffer.
 uint32_t isr_adcBufferElementCount(){
     uint32_t size = adcBuffer.indexIn - adcBuffer.indexOut; //takes end minus beginning for size
-    if(adBuffer.indexOut > adcuffer.indexIn) //index has wrapped around, add size to account for difference
+    if(adcBuffer.indexOut > adcBuffer.indexIn) //index has wrapped around, add size to account for difference
         size += ADC_BUFFER_SIZE;
     return size;
 }
