@@ -79,8 +79,8 @@ void isr_addDataToAdcBuffer(uint32_t adcData){
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer(){
     uint32_t currentIndex = adcBuffer.indexOut;
-   uint32_t newIndex = incrementIndex(currentIndex);
-   return adcBuffer.data[newIndex];
+    adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
+    return adcBuffer.data[currentIndex];
 }
 
 // This returns the number of values in the ADC buffer.

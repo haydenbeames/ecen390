@@ -66,11 +66,11 @@ void detector_init(bool ignoredFrequencies[]){
 // if ignoreSelf == true, ignore hits that are detected on your frequency.
 // Your frequency is simply the frequency indicated by the slide switches
 void detector(bool interruptsCurrentlyEnabled){
-    uint32_t elementCount = FILTER_FREQUENCY_COUNT; //isr_adcBufferElementCount();
+    uint32_t elementCount = isr_adcBufferElementCount();
     uint32_t rawAdcValue = INIT_VAL;
     double scaledAdcValue = INIT_VAL;
-    uint8_t runCount = FILTER_FREQUENCY_COUNT;
-    
+    uint8_t runCount = INIT_VAL;
+
     for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
@@ -91,19 +91,22 @@ void detector(bool interruptsCurrentlyEnabled){
             filter_firFilter(); //FIR filter
             //runs all IIR Filters and Power computations
             for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
-                if(i = 0) {
+                if(i == 0) {
                     filter_computePower(filterNum, true, false);
                 }
                 filter_iirFilter(filterNum); //IIR
                 filter_computePower(filterNum, false, false); //power without force compute or debug
             }
-
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-                //filter_getCurrentPowerValues(unsortedPowerArray);
+                filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
+                /*for(uint8_t x = 0; x < 10; x++) {
+                    printf("%d ",sortedPowerValues[x]);
+                }
+                printf("\n");*/
                 //printf("%d", thresholdPowerValue);
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
                 uint8_t index = FILTER_FREQUENCY_COUNT - 1;
@@ -186,9 +189,6 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
     while (i < 10) {
         j=i;
         while((j > 0) && (unsortedValues[j-1] > unsortedValues[j])) {
-            if(j == *maxPowerFreqNo) {
-                *maxPowerFreqNo = j-1;
-            }
             temp = unsortedValues[j-1];
             unsortedValues[j-1] = unsortedValues[j];
             unsortedValues[j] = temp;
