@@ -67,10 +67,11 @@ void detector_init(bool ignoredFrequencies[]){
 // if ignoreSelf == true, ignore hits that are detected on your frequency.
 // Your frequency is simply the frequency indicated by the slide switches
 void detector(bool interruptsCurrentlyEnabled){
-    uint32_t elementCount = isr_adcBufferElementCount();
+    uint32_t elementCount = FILTER_FREQUENCY_COUNT; //isr_adcBufferElementCount();
     uint32_t rawAdcValue = INIT_VAL;
     double scaledAdcValue = INIT_VAL;
-    uint8_t runCount = INIT_VAL;
+    uint8_t runCount = FILTER_FREQUENCY_COUNT;
+    
     for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
@@ -83,14 +84,17 @@ void detector(bool interruptsCurrentlyEnabled){
         scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
         filter_addNewInput(scaledAdcValue); //adds to filter process
         runCount++; //increment for another value added
-        
+
         //reached decimation value, runs all filters and power
-        if(runCount == FILTER_FIR_DECIMATION_FACTOR){ 
+        if(runCount >= FILTER_FIR_DECIMATION_FACTOR){ 
             runCount = INIT_VAL; //resets for next set of 10
 
             filter_firFilter(); //FIR filter
             //runs all IIR Filters and Power computations
             for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
+                if(i = 0) {
+                    filter_computePower(filterNum, true, false);
+                }
                 filter_iirFilter(filterNum); //IIR
                 filter_computePower(filterNum, false, false); //power without force compute or debug
             }
@@ -101,11 +105,10 @@ void detector(bool interruptsCurrentlyEnabled){
                 //filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
-                
+                //printf("%d", thresholdPowerValue);
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
                 uint8_t index = FILTER_FREQUENCY_COUNT - 1;
                 while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
-                    
                     if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
                         hitDetected = true; //sets flag high
                         maxFreq = sortedIndexArray[index]; //saves index of hit
@@ -175,16 +178,31 @@ void detector_setFudgeFactorIndex(uint32_t index){
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){
     uint16_t i = 0;
     uint16_t j = 0;
-    uint16_t temp = 0;
+    uint32_t temp = 0;
+    uint32_t tempIndex = 0;
+    uint32_t maxVal = 0;
+    for (uint8_t m = 0; m < 10; m++) {
+        sortedIndexArray[m] = m;
+    }
     while (i < 10) {
         j=i;
         while((j > 0) && (unsortedValues[j-1] > unsortedValues[j])) {
+            if(j == *maxPowerFreqNo) {
+                *maxPowerFreqNo = j-1;
+            }
             temp = unsortedValues[j-1];
             unsortedValues[j-1] = unsortedValues[j];
             unsortedValues[j] = temp;
+
+            temp = sortedIndexArray[j-1];
+            sortedIndexArray[j-1] = sortedIndexArray[j];
+            sortedIndexArray[j] = temp;
             --j;
         }
         ++i;
+    }
+    for(uint8_t k = 0; k < 10; k++) {
+        sortedValues[k] = unsortedValues[k];
     }
 }
 
@@ -221,12 +239,24 @@ void detector_runTest(){
     unsortedPowerArray[8] = 900;
     unsortedPowerArray[9] = 592;
 
-    detector(false); //runs detector without interrupts enabled
+    //detector(false); //runs detector without interrupts enabled
+    detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
+                thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
+                printf("%d", thresholdPowerValue);
+                //loop starts at highest power, if above threshold and not ignored, then becomes hit
+                uint8_t index = FILTER_FREQUENCY_COUNT - 1;
+                while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
+                    if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
+                        hitDetected = true; //sets flag high
+                        maxFreq = sortedIndexArray[index]; //saves index of hit
+                    }
+                    index--;
+                }
     if(detector_hitDetected())
-        printf("Hit on channel $d\n", maxFreq);
+        printf("Hit on channel %d\n", maxFreq);
     else
         printf("No Hit\n");
-
+    detector_clearHit();
     //create data set of power values that won't show power value
     unsortedPowerArray[0] = 100;
     unsortedPowerArray[1] = 2.1;
@@ -239,9 +269,21 @@ void detector_runTest(){
     unsortedPowerArray[8] = 90;
     unsortedPowerArray[9] = 592; //high, but not 1000 * 82.9
 
-    detector(false);
+    //detector(false);
+    detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
+                thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
+                printf("%d", thresholdPowerValue);
+                //loop starts at highest power, if above threshold and not ignored, then becomes hit
+                index = FILTER_FREQUENCY_COUNT - 1;
+                while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
+                    if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
+                        hitDetected = true; //sets flag high
+                        maxFreq = sortedIndexArray[index]; //saves index of hit
+                    }
+                    index--;
+                }
     if(detector_hitDetected())
-        printf("Hit on channel $d\n", maxFreq);
+        printf("Hit on channel %d\n", maxFreq);
     else
         printf("No Hit\n");
 }
