@@ -195,7 +195,21 @@ double detector_getScaledAdcValue(isr_AdcValue_t adcValue){
 
 // Students implement this as part of Milestone 3, Task 3.
 void detector_runTest(){
+    //Isolated Test
 
+    //create data set of power values that will show a hit
+    detector(false); //runs detector without interrupts enabled
+    if(detector_hitDetected())
+        printf("Hit!\n");
+    else
+        printf("No Hit\n");
+
+    //create data set of power values that won't show power value
+    detector(false);
+    if(detector_hitDetected())
+        printf("Hit!\n");
+    else
+        printf("No Hit\n");
 }
 
 // Returns 0 if passes, non-zero otherwise.
