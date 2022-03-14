@@ -51,6 +51,7 @@ void detector_init(bool ignoredFrequencies[]){
         detector_hitArray[j] = INIT_VAL;
         unsortedPowerArray[j] = INIT_VAL;
         ignoredFreq[j] = ignoredFrequencies[j];
+        sortedIndexArray[j] = j;
     }
     //filter_init();
 }
