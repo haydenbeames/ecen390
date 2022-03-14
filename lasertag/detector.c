@@ -18,8 +18,10 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #include "filter.h"
 #include"lockoutTimer.h"
 #include "hitLedTimer.h"
-#include "isr.c"
+#include "isr.h"
 #include "detector.h"
+#include "interrupts.h"
+#include <stdio.h>
 
 
 //Constants
@@ -38,9 +40,8 @@ static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
 static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
 static uint32_t thresholdPowerValue;
 static double unsortedPowerArray[FILTER_FREQUENCY_COUNT];
-
 static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
-// Always have to init things.
+// have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
@@ -51,7 +52,7 @@ void detector_init(bool ignoredFrequencies[]){
         unsortedPowerArray[j] = INIT_VAL;
         ignoredFreq[j] = ignoredFrequencies[j];
     }
-    filter_init();
+    //filter_init();
 }
 
 // Runs the entire detector: decimating fir-filter, iir-filters,
@@ -96,17 +97,19 @@ void detector(bool interruptsCurrentlyEnabled){
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-                filter_getCurrentPowerValues(unsortedPowerArray);
+                //filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
                 
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
                 uint8_t index = FILTER_FREQUENCY_COUNT - 1;
                 while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
+                    
                     if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
                         hitDetected = true; //sets flag high
                         maxFreq = sortedIndexArray[index]; //saves index of hit
                     }
+                    index--;
                 }
 
                 if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignoring all frequency
@@ -117,7 +120,7 @@ void detector(bool interruptsCurrentlyEnabled){
 
             }
         }
-    }
+}
 }
 
 // Returns true if a hit was detected.
@@ -174,7 +177,7 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
     uint16_t temp = 0;
     while (i < 10) {
         j=i;
-        while((j > 0) && (unsortedValues[j-1] < unsortedValues[j])) {
+        while((j > 0) && (unsortedValues[j-1] > unsortedValues[j])) {
             temp = unsortedValues[j-1];
             unsortedValues[j-1] = unsortedValues[j];
             unsortedValues[j] = temp;
@@ -182,6 +185,11 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
         }
         ++i;
     }
+}
+
+//helper function that calls detector_sort and checks ignored frequencies to return index of highest power
+double detector_getHit() {
+
 }
 
 // Encapsulate ADC scaling for easier testing.
@@ -204,7 +212,7 @@ void detector_runTest(){
     unsortedPowerArray[3] = 78.5;
     unsortedPowerArray[4] = 9.2;
     unsortedPowerArray[5] = 0;
-    unsortedPowerArray[6] = 11000; //hit on channel 6
+    unsortedPowerArray[6] = 110000; //hit on channel 6
     unsortedPowerArray[7] = 8000;
     unsortedPowerArray[8] = 900;
     unsortedPowerArray[9] = 592;

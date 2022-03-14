@@ -11,10 +11,10 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 //#define RUNNING_MODE_TESTS
 
 // Uncomment to run Milestone 3, Task 2
-#define RUNNING_MODE_M3_T2
+//#define RUNNING_MODE_M3_T2
 
 // Uncomment to run continuous/shooter mode, Milestone 3, Task 3
-// #define RUNNING_MODE_M3_T3
+ #define RUNNING_MODE_M3_T3
 
 // Uncomment to run two-player mode, Milestone 5
 // #define RUNNING_MODE_M5
@@ -44,6 +44,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #include "transmitter.h"
 #include "trigger.h"
 #include "utils.h"
+
 
 // main function
 int main() {
@@ -98,13 +99,14 @@ int main() {
   // The program comes up in continuous mode.
   // Hold BTN2 while the program starts to come up in shooter mode.
   buttons_init(); // Init the buttons.
+  detector_runTest();
   if (buttons_read() &
       BUTTONS_BTN2_MASK) { // Read the buttons to see if BTN2 is depressed.
     printf("Starting shooter mode\n");
-    runningModes_shooter(); // Run shooter mode if BTN2 is depressed.
+    //runningModes_shooter(); // Run shooter mode if BTN2 is depressed.
   } else {
     printf("Starting continuous mode\n");
-    runningModes_continuous(); // Otherwise, go to continuous mode.
+    //runningModes_continuous(); // Otherwise, go to continuous mode.
   }
 #endif
 
