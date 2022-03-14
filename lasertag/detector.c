@@ -205,6 +205,9 @@ double detector_getScaledAdcValue(isr_AdcValue_t adcValue){
 void detector_runTest(){
     //Isolated Test
 
+    bool channels[] = {false, false, false, false, false, false, false, false, false, false};
+    detector_init(channels);
+
     //create data set of power values that will show a hit
     unsortedPowerArray[0] = 0;
     unsortedPowerArray[1] = 2.1;
@@ -212,7 +215,7 @@ void detector_runTest(){
     unsortedPowerArray[3] = 78.5;
     unsortedPowerArray[4] = 9.2;
     unsortedPowerArray[5] = 0;
-    unsortedPowerArray[6] = 110000; //hit on channel 6
+    unsortedPowerArray[6] = 111 * FUDGE_FACTOR; //hit on channel 6
     unsortedPowerArray[7] = 8000;
     unsortedPowerArray[8] = 900;
     unsortedPowerArray[9] = 592;
