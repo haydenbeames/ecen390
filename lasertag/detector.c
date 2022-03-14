@@ -45,6 +45,7 @@ static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
 void detector_init(bool ignoredFrequencies[]){
+    printf("INIT");
     hitDetected = false; //sets flags and arrays to zero
     ignoreAllHits = false;
     for(uint8_t j = 0; j < FILTER_FREQUENCY_COUNT; j++) {
@@ -71,7 +72,7 @@ void detector(bool interruptsCurrentlyEnabled){
     uint32_t rawAdcValue = INIT_VAL;
     double scaledAdcValue = INIT_VAL;
     uint8_t runCount = INIT_VAL;
-
+    //printf("\n%d\n", elementCount);
     for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
@@ -92,9 +93,6 @@ void detector(bool interruptsCurrentlyEnabled){
             filter_firFilter(); //FIR filter
             //runs all IIR Filters and Power computations
             for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
-                if(i == 0) {
-                    filter_computePower(filterNum, true, false);
-                }
                 filter_iirFilter(filterNum); //IIR
                 filter_computePower(filterNum, false, false); //power without force compute or debug
             }
@@ -104,10 +102,10 @@ void detector(bool interruptsCurrentlyEnabled){
                 filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
-                /*for(uint8_t x = 0; x < 10; x++) {
-                    printf("%d ",sortedPowerValues[x]);
+                for(uint8_t x = 0; x < 10; x++) {
+                    printf("%d ", unsortedPowerArray[x]);
                 }
-                printf("\n");*/
+                printf("\n");
                 //printf("%d", thresholdPowerValue);
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
                 uint8_t index = FILTER_FREQUENCY_COUNT - 1;
