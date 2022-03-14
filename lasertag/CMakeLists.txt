@@ -10,10 +10,10 @@ add_executable(lasertag.elf
  hitLedTimer.c
  lockoutTimer.c
  detector.c
-# sound.c
-# timer_ps.c
-# runningModes.c
-# runningModes2.c
+ sound.c
+ timer_ps.c
+ runningModes.c
+ runningModes2.c
 )
 
 add_subdirectory(sounds)

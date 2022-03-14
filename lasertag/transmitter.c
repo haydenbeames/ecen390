@@ -28,35 +28,6 @@ enum transmitter_st_t {
 };
 static enum transmitter_st_t currentState;
 
-// debug helper function
-void debugStatePrint() {
-  static enum transmitter_st_t previousState;
-  static bool firstPass = true;
-  // Only print the message if:
-  // 1. This the first pass and the value for previousState is unknown.
-  // 2. previousState != currentState - this prevents reprinting the same state
-  // name over and over.
-  if (previousState != currentState || firstPass) {
-    firstPass = false; // previousState will be defined, firstPass is false.
-    previousState =
-        currentState;       // keep track of the last state that you were in.
-    switch (currentState) { // This prints messages based upon the state that
-                            // you were in.
-    case init_st:
-      printf(TRANSMITTER_INIT_ST_MSG);
-      break;
-    case waiting_for_activation_st:
-      printf(TRANSMITTER_WAITING_FOR_ACTIVATION_ST_MSG);
-      break;
-    case high_st:
-      printf(TRANSMITTER_HIGH_ST_MSG);
-      break;
-    case low_st:
-      printf(TRANSMITTER_LOW_ST_MSG);
-      break;
-    }
-  }
-}
 // initialize transmitter
 void transmitter_init() {
   mio_init(false); // false disables any debug printing if there is a system
@@ -136,7 +107,6 @@ void transmitter_runTest() {
     transmitter_run();
     // Start the transmitter.
     while (transmitter_running()) {
-      debugStatePrint();
       transmitter_tick();
     }
     printf("completed one test period.\n");
