@@ -198,16 +198,38 @@ void detector_runTest(){
     //Isolated Test
 
     //create data set of power values that will show a hit
+    unsortedPowerArray[0] = 0;
+    unsortedPowerArray[1] = 2.1;
+    unsortedPowerArray[2] = 100; //median
+    unsortedPowerArray[3] = 78.5;
+    unsortedPowerArray[4] = 9.2;
+    unsortedPowerArray[5] = 0;
+    unsortedPowerArray[6] = 11000; //hit on channel 6
+    unsortedPowerArray[7] = 8000;
+    unsortedPowerArray[8] = 900;
+    unsortedPowerArray[9] = 592;
+
     detector(false); //runs detector without interrupts enabled
     if(detector_hitDetected())
-        printf("Hit!\n");
+        printf("Hit on channel $d\n", maxFreq);
     else
         printf("No Hit\n");
 
     //create data set of power values that won't show power value
+    unsortedPowerArray[0] = 100;
+    unsortedPowerArray[1] = 2.1;
+    unsortedPowerArray[2] = 100;
+    unsortedPowerArray[3] = 78.5;
+    unsortedPowerArray[4] = 9.2;
+    unsortedPowerArray[5] = 0;
+    unsortedPowerArray[6] = 11;
+    unsortedPowerArray[7] = 82.9; //median
+    unsortedPowerArray[8] = 90;
+    unsortedPowerArray[9] = 592; //high, but not 1000 * 82.9
+
     detector(false);
     if(detector_hitDetected())
-        printf("Hit!\n");
+        printf("Hit on channel $d\n", maxFreq);
     else
         printf("No Hit\n");
 }
