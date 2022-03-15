@@ -99,6 +99,7 @@ int main() {
   // The program comes up in continuous mode.
   // Hold BTN2 while the program starts to come up in shooter mode.
   buttons_init(); // Init the buttons.
+  //bufferTest();
   if (buttons_read() &
       BUTTONS_BTN2_MASK) { // Read the buttons to see if BTN2 is depressed.
     printf("Starting shooter mode\n");

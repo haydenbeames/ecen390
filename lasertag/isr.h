@@ -35,4 +35,5 @@ uint32_t isr_removeDataFromAdcBuffer();
 // This returns the number of values in the ADC buffer.
 uint32_t isr_adcBufferElementCount();
 
+uint32_t bufferTest();
 #endif /* ISR_H_ */

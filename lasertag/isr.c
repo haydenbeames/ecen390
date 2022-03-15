@@ -6,6 +6,8 @@
 #include "hitLedTimer.h"
 #include "filter.h"
 #include "switches.h"
+#include "utils.h"
+#include <stdio.h>
 
 /*
 typedef uint32_t
@@ -96,4 +98,28 @@ uint32_t incrementIndex(uint32_t currIndex){
         return INIT_VAL;
     else
         return ++currIndex;
+}
+
+uint32_t bufferTest() {
+    uint32_t myData[23] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+    adcBufferInit();
+    for(uint8_t i = 0; i < 22; i++) {
+        isr_addDataToAdcBuffer(myData[i]);
+        utils_msDelay(100);
+        for(uint8_t j = 0; j < 10; j++) {
+            printf("%d ", adcBuffer.data[j]);
+        }
+        printf("\n");
+        printf("%d\n", isr_adcBufferElementCount());
+    }
+    isr_removeDataFromAdcBuffer();
+    isr_removeDataFromAdcBuffer();
+    isr_removeDataFromAdcBuffer();
+    isr_removeDataFromAdcBuffer();
+    for(uint8_t k = 0; k < 10; k++) {
+            printf("%d ", adcBuffer.data[k]);
+        }
+        printf("\n");
+    printf("%d\n", isr_adcBufferElementCount());
+    
 }
