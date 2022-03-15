@@ -50,11 +50,10 @@ void detector_init(bool ignoredFrequencies[]){
     ignoreAllHits = false;
     for(uint8_t j = 0; j < FILTER_FREQUENCY_COUNT; j++) {
         detector_hitArray[j] = INIT_VAL;
-        unsortedPowerArray[j] = INIT_VAL;
         ignoredFreq[j] = ignoredFrequencies[j];
         sortedIndexArray[j] = j;
     }
-    //filter_init();
+    filter_init();
 }
 
 // Runs the entire detector: decimating fir-filter, iir-filters,
@@ -156,7 +155,7 @@ void detector_setFudgeFactorIndex(uint32_t index){
 // contains the sorted values. Note: it is assumed that the size of both of the
 // array arguments is 10.
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){
-    uint16_t i = 0;
+    /*uint16_t i = 0;
     uint16_t j = 0;
     uint32_t temp = 0;
     uint32_t tempIndex = 0;
@@ -180,7 +179,10 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
     }
     for(uint8_t k = 0; k < 10; k++) {
         sortedValues[k] = unsortedValues[k];
-    }
+    }*/
+
+
+    
 }
 
 //helper function that calls detector_sort and checks ignored frequencies to return index of highest power
