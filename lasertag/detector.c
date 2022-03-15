@@ -100,28 +100,7 @@ void detector(bool interruptsCurrentlyEnabled){
             }
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
-                //hit-detection algorithm
-                detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
-                thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
-                /*for(uint8_t x = 0; x < 10; x++) {
-                    printf("%d ", unsortedPowerArray[x]);
-                }
-                printf("\n");*/
-                //printf("%d", thrsortedPowerValuesesholdPowerValue);
-                //loop starts at highest power, if above threshold and not ignored, then becomes hit
-                if(sortedPowerValues[9] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[9]]){
-                    maxFreq = sortedIndexArray[9];
-                    hitDetected = true;
-                }
-                else{
-                    hitDetected = false;
-                }
-
-                if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignoring all frequency
-                    lockoutTimer_start();
-                    hitLedTimer_start();
-                    detector_hitArray[maxFreq] += 1; //increases hitCount for the max Freq
-                }
+                detector_getHit();
 
             }
         }
@@ -206,7 +185,22 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
 
 //helper function that calls detector_sort and checks ignored frequencies to return index of highest power
 double detector_getHit() {
+    if(ignoreAllHits) //invincible
+        return;
+    
+    detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues);
 
+    thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX];
+    if(sortedPowerValues[9] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[9]]){
+        hitDetected = true;
+        maxFreq = sortedIndexArray[9];
+        detector_hitArray[maxFreq] += 1; //increases hitCount for the max Freq
+    }
+
+    if(hitDetected){
+        hitLedTimer_start();
+        lockoutTimer_start();
+    }
 }
 
 // Encapsulate ADC scaling for easier testing.
