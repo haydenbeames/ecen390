@@ -96,12 +96,11 @@ void detector(bool interruptsCurrentlyEnabled){
             //runs all IIR Filters and Power computations
             for(uint8_t filterNum = INIT_VAL; filterNum < FILTER_FREQUENCY_COUNT; filterNum++){
                 filter_iirFilter(filterNum); //IIR
-                filter_computePower(filterNum, false, false); //power without force compute or debug
+                unsortedPowerArray[filterNum] = filter_computePower(filterNum, false, false); //power without force compute or debug
             }
             //Run hit detection
             if(!lockoutTimer_running()){ //no lockoutTimer, not hit yet
                 //hit-detection algorithm
-                filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
                 /*for(uint8_t x = 0; x < 10; x++) {
@@ -110,13 +109,12 @@ void detector(bool interruptsCurrentlyEnabled){
                 printf("\n");*/
                 //printf("%d", thrsortedPowerValuesesholdPowerValue);
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
-                uint8_t index = FILTER_FREQUENCY_COUNT - 1;
-                while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
-                    if(!ignoredFreq[index]){ //set hitDetected high and select maxFreq if not ignored
-                        hitDetected = true; //sets flag high
-                        maxFreq = sortedIndexArray[index]; //saves index of hit
-                    }
-                    index--;
+                if(sortedPowerValues[9] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[9]]){
+                    maxFreq = sortedIndexArray[9];
+                    hitDetected = true;
+                }
+                else{
+                    hitDetected = false;
                 }
 
                 if(hitDetected && !ignoreAllHits){ //hitDetected and not an ignoring all frequency
