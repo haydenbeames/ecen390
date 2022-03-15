@@ -70,8 +70,10 @@ void isr_function(){ //Task 2
 // the detector.
 void isr_addDataToAdcBuffer(uint32_t adcData){
     adcBuffer.data[adcBuffer.indexIn] = adcData;
+    //printf("DATA: %d\n", adcBuffer.data[adcBuffer.indexIn]);
     adcBuffer.indexIn = incrementIndex(adcBuffer.indexIn);
-    
+    //printf("INDEX IN: %d\n", adcBuffer.indexIn);
+    //printf("INDEX OUT: %d\n", adcBuffer.indexOut);
     if(adcBuffer.elementCount >= (ADC_BUFFER_SIZE - 1)) //buffer full, overwrites to push on new value
         adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
     else {
@@ -83,7 +85,9 @@ void isr_addDataToAdcBuffer(uint32_t adcData){
 uint32_t isr_removeDataFromAdcBuffer(){
     uint32_t currentIndex = adcBuffer.indexOut;
     adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
-    --adcBuffer.elementCount;
+    if(adcBuffer.elementCount >= 1) {
+        --adcBuffer.elementCount;
+    }
     return adcBuffer.data[currentIndex];
 }
 
@@ -99,24 +103,30 @@ uint32_t incrementIndex(uint32_t currIndex){
     else
         return ++currIndex;
 }
-
 uint32_t bufferTest() {
     uint32_t myData[23] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
     adcBufferInit();
-    for(uint8_t i = 0; i < 22; i++) {
-        isr_addDataToAdcBuffer(myData[i]);
-        utils_msDelay(100);
-        for(uint8_t j = 0; j < 10; j++) {
+    for(uint8_t i = 0; i < 20; i++) {
+        isr_addDataToAdcBuffer(i);
+        //utils_msDelay(100);
+        /*for(uint8_t j = 0; j < 5; j++) {
             printf("%d ", adcBuffer.data[j]);
-        }
+        }*/
         printf("\n");
         printf("%d\n", isr_adcBufferElementCount());
     }
-    isr_removeDataFromAdcBuffer();
-    isr_removeDataFromAdcBuffer();
-    isr_removeDataFromAdcBuffer();
-    isr_removeDataFromAdcBuffer();
-    for(uint8_t k = 0; k < 10; k++) {
+    for(uint8_t i = 0; i < 20; i++) {
+        printf("CURRENT DATA:  %d \n", isr_removeDataFromAdcBuffer());
+        printf("INDEX OUT: %d\n", adcBuffer.indexOut);
+        //utils_msDelay(100);
+        /*for(uint8_t j = 0; j < 5; j++) {
+            printf("%d ", adcBuffer.data[j]);
+        }*/
+        printf("\n");
+        printf("%d\n", isr_adcBufferElementCount());
+    }
+    
+    for(uint8_t k = 0; k < 5; k++) {
             printf("%d ", adcBuffer.data[k]);
         }
         printf("\n");

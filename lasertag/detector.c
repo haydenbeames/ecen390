@@ -30,6 +30,16 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #define ADC_RANGE_ADJUST -1
 #define FUDGE_FACTOR 1000
 #define MEDIAN_INDEX 4
+#define ADC_MAX 4096.0
+#define SCALING_MULTIPLE 2.0
+#define SCALING_OFFSET 1.0
+#define POWER_VALS_SIZE 10
+#define MEDIAN_INDEX 5
+#define MAX_INDEX 9
+#define TEST_FACTOR 8
+#define F_FACTOR_INDEX 5
+#define TEN_CNT_MAX 10
+#define INCREMENT 1
 
 volatile static bool hitDetected;
 volatile static bool ignoreAllHits;
@@ -44,8 +54,10 @@ volatile static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
 // have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
+
+double detector_getHit();
 void detector_init(bool ignoredFrequencies[]){
-    printf("INIT");
+    //printf("INIT");
     hitDetected = false; //sets flags and arrays to zero
     ignoreAllHits = false;
     for(uint8_t j = 0; j < FILTER_FREQUENCY_COUNT; j++) {
@@ -83,7 +95,7 @@ void detector(bool interruptsCurrentlyEnabled){
         
         //scale the adc value from -1 to 1 from 0-4095
         scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
-        printf("%d %f\n", rawAdcValue, scaledAdcValue);
+        //printf("%d %f\n", rawAdcValue, scaledAdcValue);
         filter_addNewInput(scaledAdcValue); //adds to filter process
         runCount++; //increment for another value added
 
@@ -184,13 +196,38 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[
 
     
 }
+void swap(uint8_t values[], uint8_t i, uint8_t j) {
+  uint8_t temp = values[i];
+  values[i] = values[j];
+  values[j] = temp;
+}
+void sort() {
+  uint32_t minIndex = 0;
+  // Iterates through all elements of power array
+  for (uint8_t i = 0; i < POWER_VALS_SIZE; i++) {
+    minIndex = i;
+    // For both i and j
+    for (uint8_t j = i + INCREMENT; j < POWER_VALS_SIZE; j++) {
+      // determines the smaller value in the array
+      if (unsortedPowerArray[sortedIndexArray[j]] <=
+          unsortedPowerArray[sortedIndexArray[minIndex]]) {
+        minIndex = j;
+      }
+    }
+    // Swaps the new minimum value if different
+    if (minIndex != i) {
+
+      swap(sortedIndexArray, i, minIndex);
+    }
+  }
+}
 
 //helper function that calls detector_sort and checks ignored frequencies to return index of highest power
 double detector_getHit() {
     if(ignoreAllHits) //invincible
-        return;
+        return 0.0;
     
-    detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues);
+    sort();
 
     thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX];
     if(sortedPowerValues[9] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[9]]){
@@ -203,6 +240,7 @@ double detector_getHit() {
         hitLedTimer_start();
         lockoutTimer_start();
     }
+    return (double)maxFreq;
 }
 
 // Encapsulate ADC scaling for easier testing.
