@@ -31,16 +31,16 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #define FUDGE_FACTOR 1000
 #define MEDIAN_INDEX 4
 
-static bool hitDetected;
-static bool ignoreAllHits;
-static uint32_t maxFreq;
-static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT];
-static uint32_t fudgeFactorIndex;
-static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
-static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
-static uint32_t thresholdPowerValue;
-static double unsortedPowerArray[FILTER_FREQUENCY_COUNT];
-static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
+volatile static bool hitDetected;
+volatile static bool ignoreAllHits;
+volatile static uint32_t maxFreq;
+volatile static uint16_t detector_hitArray[FILTER_FREQUENCY_COUNT];
+volatile static uint32_t fudgeFactorIndex;
+volatile static uint8_t sortedIndexArray[FILTER_FREQUENCY_COUNT];
+volatile static double sortedPowerValues[FILTER_FREQUENCY_COUNT];
+volatile static uint32_t thresholdPowerValue;
+volatile static double unsortedPowerArray[FILTER_FREQUENCY_COUNT];
+volatile static uint16_t ignoredFreq[FILTER_FREQUENCY_COUNT];
 // have to init things.
 // bool array is indexed by frequency number, array location set for true to
 // ignore, false otherwise. This way you can ignore multiple frequencies.
@@ -71,7 +71,7 @@ void detector(bool interruptsCurrentlyEnabled){
     uint32_t elementCount = isr_adcBufferElementCount();
     uint32_t rawAdcValue = INIT_VAL;
     double scaledAdcValue = INIT_VAL;
-    uint8_t runCount = INIT_VAL;
+    static uint8_t runCount = INIT_VAL;
     //printf("\n%d\n", elementCount);
     
     for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
@@ -84,7 +84,7 @@ void detector(bool interruptsCurrentlyEnabled){
         
         //scale the adc value from -1 to 1 from 0-4095
         scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
-        //printf("%d %f\n", rawAdcValue, scaledAdcValue);
+        printf("%d %f\n", rawAdcValue, scaledAdcValue);
         filter_addNewInput(scaledAdcValue); //adds to filter process
         runCount++; //increment for another value added
 

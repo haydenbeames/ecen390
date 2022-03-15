@@ -17,7 +17,7 @@ typedef uint32_t
 // Converter (ADC) is implemented in isr.c Values are added to this buffer by
 // the code in isr.c. Values are removed from this queue by code in detector.c
 
-#define ADC_BUFFER_SIZE 10
+#define ADC_BUFFER_SIZE 100000
 #define INIT_VAL 0
 
 
@@ -67,28 +67,27 @@ void isr_function(){ //Task 2
 // This adds data to the ADC queue. Data are removed from this queue and used by
 // the detector.
 void isr_addDataToAdcBuffer(uint32_t adcData){
-    if(incrementIndex(adcBuffer.indexIn) == adcBuffer.indexOut) //buffer full, overwrites to push on new value
-        adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
-
-     //buffer not full yet or indexOut already adjusted
-    adcBuffer.data[adcBuffer.indexIn] = adcData; //saves new data and moves index up
+    adcBuffer.data[adcBuffer.indexIn] = adcData;
     adcBuffer.indexIn = incrementIndex(adcBuffer.indexIn);
     
+    if(adcBuffer.elementCount >= (ADC_BUFFER_SIZE - 1)) //buffer full, overwrites to push on new value
+        adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
+    else {
+        ++(adcBuffer.elementCount);
+    }
 }
 
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer(){
     uint32_t currentIndex = adcBuffer.indexOut;
     adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
+    --adcBuffer.elementCount;
     return adcBuffer.data[currentIndex];
 }
 
 // This returns the number of values in the ADC buffer.
 uint32_t isr_adcBufferElementCount(){
-    uint32_t size = adcBuffer.indexIn - adcBuffer.indexOut; //takes end minus beginning for size
-    if(adcBuffer.indexOut > adcBuffer.indexIn) //index has wrapped around, add size to account for difference
-        size += ADC_BUFFER_SIZE;
-    return size;
+    return adcBuffer.elementCount;
 }
 
 //handles wrapping for indexes. Assumes increment by 1 only
@@ -97,8 +96,4 @@ uint32_t incrementIndex(uint32_t currIndex){
         return INIT_VAL;
     else
         return ++currIndex;
-}
-uint32_t adc_runTest() {
-    adcBufferInit();
-   // isr_addDataToAdcBuffer(adcData);
 }
