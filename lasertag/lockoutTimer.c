@@ -9,8 +9,8 @@ enum lockoutTimer_st_t {
   wait_st, // waits for run
   count_st // counts for 1/2 second
 };
-static enum lockoutTimer_st_t lockoutTimer_currentState;
-static enum lockoutTimer_st_t lockoutTimer_oldState;
+volatile static enum lockoutTimer_st_t lockoutTimer_currentState;
+volatile static enum lockoutTimer_st_t lockoutTimer_oldState;
 
 // Variables
 static uint16_t lockoutTimer;

@@ -73,6 +73,7 @@ void detector(bool interruptsCurrentlyEnabled){
     double scaledAdcValue = INIT_VAL;
     uint8_t runCount = INIT_VAL;
     //printf("\n%d\n", elementCount);
+    
     for(uint32_t i = INIT_VAL; i < elementCount; i++){ //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
@@ -83,6 +84,7 @@ void detector(bool interruptsCurrentlyEnabled){
         
         //scale the adc value from -1 to 1 from 0-4095
         scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
+        //printf("%d %f\n", rawAdcValue, scaledAdcValue);
         filter_addNewInput(scaledAdcValue); //adds to filter process
         runCount++; //increment for another value added
 
@@ -102,11 +104,11 @@ void detector(bool interruptsCurrentlyEnabled){
                 filter_getCurrentPowerValues(unsortedPowerArray);
                 detector_sort(&maxFreq, unsortedPowerArray, sortedPowerValues); //sorts array
                 thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX]; //gets threshold value
-                for(uint8_t x = 0; x < 10; x++) {
+                /*for(uint8_t x = 0; x < 10; x++) {
                     printf("%d ", unsortedPowerArray[x]);
                 }
-                printf("\n");
-                //printf("%d", thresholdPowerValue);
+                printf("\n");*/
+                //printf("%d", thrsortedPowerValuesesholdPowerValue);
                 //loop starts at highest power, if above threshold and not ignored, then becomes hit
                 uint8_t index = FILTER_FREQUENCY_COUNT - 1;
                 while(sortedPowerValues[index] > thresholdPowerValue && !hitDetected){
@@ -125,7 +127,7 @@ void detector(bool interruptsCurrentlyEnabled){
 
             }
         }
-}
+    }
 }
 
 // Returns true if a hit was detected.

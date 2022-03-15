@@ -17,7 +17,7 @@ typedef uint32_t
 // Converter (ADC) is implemented in isr.c Values are added to this buffer by
 // the code in isr.c. Values are removed from this queue by code in detector.c
 
-#define ADC_BUFFER_SIZE 100000
+#define ADC_BUFFER_SIZE 10
 #define INIT_VAL 0
 
 
@@ -97,4 +97,8 @@ uint32_t incrementIndex(uint32_t currIndex){
         return INIT_VAL;
     else
         return ++currIndex;
+}
+uint32_t adc_runTest() {
+    adcBufferInit();
+   // isr_addDataToAdcBuffer(adcData);
 }
