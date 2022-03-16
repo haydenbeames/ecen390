@@ -28,8 +28,7 @@ typedef detector_status_t (*sortTestFunctionPtr)(bool, uint32_t, uint32_t, doubl
 #define INIT_VAL 0
 #define ADC_SCALAR 2047.5
 #define ADC_RANGE_ADJUST -1
-#define FUDGE_FACTOR 1000
-#define MEDIAN_INDEX 4
+#define FUDGE_FACTOR 4000
 #define ADC_MAX 4096.0
 #define SCALING_MULTIPLE 2.0
 #define SCALING_OFFSET 1.0
@@ -57,7 +56,7 @@ double detector_getHit();
 void detector_init(bool ignoredFrequencies[]){
     //printf("INIT");
     hitDetected = false; //sets flags and arrays to zero
-    ignoreAllHits = false;\
+    ignoreAllHits = false;
     //initialize arrays to zero and put indices in sortedIndexArray
     for(uint8_t j = 0; j < FILTER_FREQUENCY_COUNT; j++) {
         detector_hitArray[j] = INIT_VAL;
@@ -170,26 +169,36 @@ void swap(uint8_t swapValues[], uint8_t i, uint8_t j) {
   swapValues[i] = swapValues[j];
   swapValues[j] = temp;
 }
+
 //insertion sort algorithim helper function
 void sort() {
-  uint32_t bottomIndex = 0;
-  //iterate through array elements
-  for (uint8_t i = 0; i < FILTER_FREQUENCY_COUNT; i++) {
-    bottomIndex = i;
-    //iterate through sort algorithm
-    for (uint8_t j = i++; j < FILTER_FREQUENCY_COUNT; j++) {
-        //comparison of smaller values
-        if (unsortedPowerArray[sortedIndexArray[j]] <=
-            unsortedPowerArray[sortedIndexArray[bottomIndex]]) {
-            bottomIndex = j;
+    //printf("\n unsorted: \n");
+    // for(uint8_t k = 0; k<10;k++) {
+       
+    //     sortedIndexArray[k] = k;
+    //      printf("%d:%d\n",k, sortedIndexArray[k]);
+    // }
+    
+  uint8_t i = 0;
+    uint8_t j = 0;
+    double temp = 0;
+    for (uint8_t m = 0; m < 10; m++) {
+        sortedIndexArray[m] = m;
+    }
+    while (i < 10) {
+        j=i;
+        while((j > 0) && (unsortedPowerArray[sortedIndexArray[j-1]] > unsortedPowerArray[sortedIndexArray[j]])) {
+            temp = sortedIndexArray[j-1];
+            sortedIndexArray[j-1] = sortedIndexArray[j];
+            sortedIndexArray[j] = temp;
+            --j;
         }
+        ++i;
     }
-    //swaps the bottom value if not equal to current Iteration
-    if (bottomIndex != i) {
-        //call swap function
-        swap(sortedIndexArray, i, bottomIndex);
-    }
-  }
+//     printf("\nsorted\n");
+//   for(uint8_t m = 0; m<10;m++) {
+//         printf("%d:%d,p:%f\n",m, sortedIndexArray[m],unsortedPowerArray[sortedIndexArray[m]]);
+//     }
 }
 
 //helper function that calls detector_sort and checks ignored frequencies to return index of highest power
@@ -198,9 +207,14 @@ double detector_getHit() {
     if(ignoreAllHits)
         return 0;
     sort();
-    thresholdPowerValue = FUDGE_FACTOR * sortedPowerValues[MEDIAN_INDEX];
+    thresholdPowerValue = FUDGE_FACTOR * unsortedPowerArray[sortedIndexArray[MEDIAN_INDEX]];
+    //printf("%f\n", unsortedPowerArray[sortedIndexArray[MEDIAN_INDEX]]);
     //if max power value is greater threshold and not an ignored value then a hit has been detected
-    if(sortedPowerValues[BIGGEST_INDEX] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[BIGGEST_INDEX]]){
+    /*for(uint8_t i = 0; i < 10; i++) {
+        printf("index:%d %f\n", i, unsortedPowerArray[sortedIndexArray[i]]);
+    }*/
+    
+    if(unsortedPowerArray[sortedIndexArray[BIGGEST_INDEX]] > thresholdPowerValue && !ignoredFreq[sortedIndexArray[BIGGEST_INDEX]]){
         hitDetected = true;
         maxFreq = sortedIndexArray[BIGGEST_INDEX];
         detector_hitArray[maxFreq] += 1; //increases hitCount for the max Freq
