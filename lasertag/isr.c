@@ -21,6 +21,8 @@ typedef uint32_t
 
 #define ADC_BUFFER_SIZE 100000
 #define INIT_VAL 0
+#define TEST_SIZE 20
+#define RUN_TEST_SIZE 5
 
 
 
@@ -43,14 +45,14 @@ void adcBufferInit() {
     adcBuffer.indexIn = INIT_VAL;
     adcBuffer.indexOut = INIT_VAL;
     adcBuffer.elementCount = INIT_VAL;
-    for(uint32_t i = INIT_VAL; i < ADC_BUFFER_SIZE; i++){
+    for(uint32_t i = INIT_VAL; i < ADC_BUFFER_SIZE; i++){ //initializes buffer with 0's
         adcBuffer.data[i] = INIT_VAL;
     }
 }
 
 // Performs inits for anything in isr.c
 void isr_init() {
-    adcBufferInit();
+    adcBufferInit();    //init functions
     trigger_init();
     lockoutTimer_init();
     transmitter_init();
@@ -83,9 +85,9 @@ void isr_addDataToAdcBuffer(uint32_t adcData){
 
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer(){
-    uint32_t currentIndex = adcBuffer.indexOut;
+    uint32_t currentIndex = adcBuffer.indexOut; //saves current index for data reading
     adcBuffer.indexOut = incrementIndex(adcBuffer.indexOut);
-    if(adcBuffer.elementCount >= 1) {
+    if(adcBuffer.elementCount >= 1) { //lowers elementCount when read
         --adcBuffer.elementCount;
     }
     return adcBuffer.data[currentIndex];
@@ -98,15 +100,17 @@ uint32_t isr_adcBufferElementCount(){
 
 //handles wrapping for indexes. Assumes increment by 1 only
 uint32_t incrementIndex(uint32_t currIndex){
-    if(currIndex >= (ADC_BUFFER_SIZE - 1))
+    if(currIndex >= (ADC_BUFFER_SIZE - 1)) //controls wrapping around end of buffer
         return INIT_VAL;
     else
         return ++currIndex;
 }
-uint32_t bufferTest() {
-    uint32_t myData[23] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
-    adcBufferInit();
-    for(uint8_t i = 0; i < 20; i++) {
+
+//Testing function to make sure ADC Buffer is functional
+uint32_t isr_bufferTest() {
+    uint32_t myData[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23}; //test values
+    adcBufferInit(); //runs init
+    for(uint8_t i = 0; i < TEST_SIZE; i++) { //adds 20 values to buffer
         isr_addDataToAdcBuffer(i);
         //utils_msDelay(100);
         /*for(uint8_t j = 0; j < 5; j++) {
@@ -115,7 +119,7 @@ uint32_t bufferTest() {
         printf("\n");
         printf("%d\n", isr_adcBufferElementCount());
     }
-    for(uint8_t i = 0; i < 20; i++) {
+    for(uint8_t i = 0; i < TEST_SIZE; i++) { //loops to remove and read values from buffer
         printf("CURRENT DATA:  %d \n", isr_removeDataFromAdcBuffer());
         printf("INDEX OUT: %d\n", adcBuffer.indexOut);
         //utils_msDelay(100);
@@ -126,10 +130,10 @@ uint32_t bufferTest() {
         printf("%d\n", isr_adcBufferElementCount());
     }
     
-    for(uint8_t k = 0; k < 5; k++) {
+    for(uint8_t k = 0; k < RUN_TEST_SIZE; k++) { //prints all values in buffer
             printf("%d ", adcBuffer.data[k]);
         }
         printf("\n");
-    printf("%d\n", isr_adcBufferElementCount());
+    printf("%d\n", isr_adcBufferElementCount()); //prints final count in buffer
     
 }
