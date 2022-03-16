@@ -87,8 +87,8 @@ void detector(bool interruptsCurrentlyEnabled){
         //repeats for all elements
         if(interruptsCurrentlyEnabled) //disables interrupts to safely manipulate adcBuffer
             interrupts_disableArmInts();
-        
         rawAdcValue = isr_removeDataFromAdcBuffer(); //pop value
+        //check if interrupts are enabled
         if(interruptsCurrentlyEnabled) //reinstates interrupts if going before
             interrupts_enableArmInts();
         //scale the adc value from -1 to 1 from 0-4095
@@ -165,7 +165,7 @@ void detector_setFudgeFactorIndex(uint32_t index){
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo, double unsortedValues[], double sortedValues[]){    
 }
 //helper function that swaps any array values put into it
-void swap(uint8_t values[], uint8_t i, uint8_t j) {
+void swap(uint8_t swapValues[], uint8_t i, uint8_t j) {
   uint8_t temp = swapValues[i];
   swapValues[i] = swapValues[j];
   swapValues[j] = temp;
@@ -177,17 +177,17 @@ void sort() {
   for (uint8_t i = 0; i < FILTER_FREQUENCY_COUNT; i++) {
     bottomIndex = i;
     //iterate through sort algorithm
-    for (uint8_t j = i++; j < FILTER_FREQUENCY_COUNTE; j++) {
+    for (uint8_t j = i++; j < FILTER_FREQUENCY_COUNT; j++) {
         //comparison of smaller values
         if (unsortedPowerArray[sortedIndexArray[j]] <=
-            unsortedPowerArray[sortedIndexArray[minIndex]]) {
+            unsortedPowerArray[sortedIndexArray[bottomIndex]]) {
             bottomIndex = j;
         }
     }
     //swaps the bottom value if not equal to current Iteration
     if (bottomIndex != i) {
         //call swap function
-        swap(sortedIndexArray, i, minIndex);
+        swap(sortedIndexArray, i, bottomIndex);
     }
   }
 }
