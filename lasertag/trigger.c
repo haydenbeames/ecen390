@@ -96,9 +96,9 @@ void trigger_tick() {
 
       else { // timer done: debounced successfully
         trigger_currentState = transmit_st;
-        //printf("D\n");
-        transmitter_run(); //starts transmitter - task three
-        shotCount--; // takes away one shot from shotCount
+        // printf("D\n");
+        transmitter_run(); // starts transmitter - task three
+        shotCount--;       // takes away one shot from shotCount
       }
     } else // bounced, not settled yet
       trigger_currentState = wait_For_Trigger_st;
@@ -121,7 +121,7 @@ void trigger_tick() {
         trigger_currentState = debounce_Release_st;
       else { // passed debounce
         trigger_currentState = wait_For_Trigger_st;
-        //printf("U\n");
+        // printf("U\n");
       }
     }
     break;
@@ -132,8 +132,8 @@ void trigger_tick() {
   }
 
   // debug function if transition occurred
-  //if (trigger_currentState != trigger_oldState)
-    //triggerprintState(runTest);
+  // if (trigger_currentState != trigger_oldState)
+  // triggerprintState(runTest);
 
   // State Actions
   switch (trigger_currentState) {

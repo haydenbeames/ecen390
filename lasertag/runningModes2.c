@@ -7,9 +7,9 @@ source code for personal or educational use.
 For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 */
 
+#include "hitLedTimer.h"
 #include "interrupts.h"
 #include "runningModes.h"
-#include "hitLedTimer.h"
 
 #include <stdio.h>
 

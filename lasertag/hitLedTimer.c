@@ -43,17 +43,17 @@ void hitLedTimer_tick() {
   case init_st: // INIT
     hitLedTimer_currentState = disabled_st;
     break;
-
   case disabled_st: // DISABLED
-    if (enabled)    // moves to wait for run
+    // check if enabled
+    if (enabled) { // moves to wait for run
       hitLedTimer_currentState = wait_for_start_st;
-
-    else // still disabled, stays
+    } else // still disabled, stays
       hitLedTimer_currentState = disabled_st;
     break;
 
   case wait_for_start_st: // WAIT FOR START
-    if (!enabled)         // disabled
+    // check if not enabled
+    if (!enabled) // disabled
       hitLedTimer_currentState = disabled_st;
     else if (start) { // running hit LED
       hitLedTimer_currentState = hit_Detected_st;
@@ -65,7 +65,6 @@ void hitLedTimer_tick() {
   case hit_Detected_st:                          // HIT DETECTED
     if (lightTimer < HIT_LED_TIMER_EXPIRE_VALUE) // still counting
       hitLedTimer_currentState = hit_Detected_st;
-
     else { // count done, truns off LED
       hitLedTimer_currentState = wait_for_start_st;
       start = false; // lowers running flag
@@ -102,7 +101,7 @@ void hitLedTimer_tick() {
 // Need to init things.
 void hitLedTimer_init() {
   hitLedTimer_currentState = init_st; // starts values
-  enabled = false;
+  enabled = true;
   start = false;
   lightTimer = HIT_LED_TIMER_INIT_VAL;
 
